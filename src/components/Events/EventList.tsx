@@ -3,10 +3,10 @@ import { Plus, Search, Filter, Edit, Trash2, Users, Eye } from 'lucide-react';
 
 interface Event {
   id: number;
-  title: string;
+  eventTitle: string;
   date: string;
   time: string;
-  location: string;
+  eventLocation: string;
   attendees: number;
   confirmed: number;
   status: 'draft' | 'published' | 'completed' | 'cancelled';
@@ -26,10 +26,10 @@ export default function EventList({ onCreateEvent, onEditEvent, onViewAttendees 
   const events: Event[] = [
     {
       id: 1,
-      title: 'Summer Camp 2025 - International Discovery Week',
+      eventTitle: 'Summer Camp 2025 - International Discovery Week',
       date: '2025-05-05',
       time: '6:00 PM',
-      location: 'Comedor Universitario, UPC Sabanas',
+      eventLocation: 'Comedor Universitario, UPC Sabanas',
       attendees: 17,
       confirmed: 17,
       status: 'published',
@@ -37,10 +37,10 @@ export default function EventList({ onCreateEvent, onEditEvent, onViewAttendees 
     },
     {
       id: 2,
-      title: 'Congreso de Innovación Tecnológica',
+      eventTitle: 'Congreso de Innovación Tecnológica',
       date: '2025-02-14',
       time: '9:00 AM',
-      location: 'Auditorio Central',
+      eventLocation: 'Auditorio Central',
       attendees: 320,
       confirmed: 280,
       status: 'published',
@@ -48,10 +48,10 @@ export default function EventList({ onCreateEvent, onEditEvent, onViewAttendees 
     },
     {
       id: 3,
-      title: 'Encuentro de Egresados y Mentores',
+      eventTitle: 'Encuentro de Egresados y Mentores',
       date: '2025-01-09',
       time: '4:03 PM',
-      location: 'Auditorio principal',
+      eventLocation: 'Auditorio principal',
       attendees: 43,
       confirmed: 35,
       status: 'completed',
@@ -59,10 +59,10 @@ export default function EventList({ onCreateEvent, onEditEvent, onViewAttendees 
     },
     {
       id: 4,
-      title: 'Workshop de Desarrollo Web',
+      eventTitle: 'Workshop de Desarrollo Web',
       date: '2025-03-15',
       time: '2:00 PM',
-      location: 'Sala de Conferencias A',
+      eventLocation: 'Sala de Conferencias A',
       attendees: 25,
       confirmed: 20,
       status: 'draft',
@@ -71,10 +71,19 @@ export default function EventList({ onCreateEvent, onEditEvent, onViewAttendees 
   ];
 
   const filteredEvents = events.filter(event => {
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = event.eventTitle.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const handleDeleteEvent = (eventId: number) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este evento?')) {
+      // In a real app, you would call your API to delete the event
+      console.log('Deleting event with ID:', eventId);
+      // For now, just show an alert
+      alert('Evento eliminado correctamente');
+    }
+  };
 
   const getStatusColor = (status: Event['status']) => {
     switch (status) {
@@ -95,15 +104,15 @@ export default function EventList({ onCreateEvent, onEditEvent, onViewAttendees 
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Events</h1>
-          <p className="text-gray-600">Manage your events and track attendance</p>
+          <h1 className="text-2xl font-bold text-gray-900">Eventos</h1>
+          <p className="text-gray-600">Gestiona tus eventos y rastrea la asistencia</p>
         </div>
         <button
           onClick={onCreateEvent}
           className="bg-lime-500 text-white px-4 py-2 rounded-lg hover:bg-lime-600 transition-colors duration-200 flex items-center space-x-2"
         >
           <Plus size={20} />
-          <span>Create Event</span>
+          <span>Crear Evento</span>
         </button>
       </div>
 
@@ -114,7 +123,7 @@ export default function EventList({ onCreateEvent, onEditEvent, onViewAttendees 
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Search events..."
+              placeholder="Buscar eventos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
@@ -127,11 +136,11 @@ export default function EventList({ onCreateEvent, onEditEvent, onViewAttendees 
               onChange={(e) => setStatusFilter(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-lime-500 focus:border-transparent"
             >
-              <option value="all">All Status</option>
-              <option value="published">Published</option>
+              <option value="all">Todos los Estados</option>
+              <option value="published">Publicado</option>
               <option value="draft">Draft</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="completed">Completado</option>
+              <option value="cancelled">Cancelado</option>
             </select>
           </div>
         </div>
@@ -144,7 +153,7 @@ export default function EventList({ onCreateEvent, onEditEvent, onViewAttendees 
             <div className="aspect-video bg-gray-200 relative overflow-hidden">
               <img
                 src={event.image}
-                alt={event.title}
+                alt={event.eventTitle}
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-4 right-4">
@@ -155,20 +164,20 @@ export default function EventList({ onCreateEvent, onEditEvent, onViewAttendees 
             </div>
             
             <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{event.title}</h3>
+              <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{event.eventTitle}</h3>
               
               <div className="space-y-1 text-sm text-gray-600 mb-4">
                 <div className="flex items-center">
-                  <span className="w-16">Date:</span>
+                  <span className="w-16">Fecha:</span>
                   <span>{new Date(event.date).toLocaleDateString()} at {event.time}</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="w-16">Location:</span>
-                  <span className="truncate">{event.location}</span>
+                  <span className="w-16">Lugar:</span>
+                  <span className="truncate">{event.eventLocation}</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="w-16">Attendees:</span>
-                  <span>{event.confirmed}/{event.attendees} confirmed</span>
+                  <span className="w-16">Asistentes:</span>
+                  <span>{event.confirmed}/{event.attendees} confirmados</span>
                 </div>
               </div>
               
@@ -178,26 +187,27 @@ export default function EventList({ onCreateEvent, onEditEvent, onViewAttendees 
                   className="text-lime-600 hover:text-lime-700 flex items-center space-x-1 text-sm"
                 >
                   <Users size={16} />
-                  <span>View Attendees</span>
+                  <span>Ver Asistentes</span>
                 </button>
                 
                 <div className="flex items-center space-x-2">
                   <button
                     className="p-1.5 text-gray-600 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
-                    title="View Details"
+                    title="Ver Detalles"
                   >
                     <Eye size={16} />
                   </button>
                   <button
                     onClick={() => onEditEvent(event)}
                     className="p-1.5 text-gray-600 hover:text-lime-600 rounded-lg hover:bg-lime-50 transition-colors"
-                    title="Edit Event"
+                    title="Editar Evento"
                   >
                     <Edit size={16} />
                   </button>
                   <button
+                    onClick={() => handleDeleteEvent(event.id)}
                     className="p-1.5 text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                    title="Delete Event"
+                    title="Eliminar Evento"
                   >
                     <Trash2 size={16} />
                   </button>
