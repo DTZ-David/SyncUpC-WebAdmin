@@ -71,7 +71,7 @@ export default function StaffManagement() {
       case 'moderator':
         return 'bg-blue-100 text-blue-700';
       case 'organizer':
-        return 'bg-lime-100 text-lime-700';
+        return 'bg-green-100 text-green-700';
       default:
         return 'bg-gray-100 text-gray-700';
     }
@@ -88,15 +88,15 @@ export default function StaffManagement() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Admin Staff</h1>
-          <p className="text-gray-600">Manage admin staff and their permissions</p>
+          <h1 className="text-2xl font-bold text-gray-900">Personal Administrativo</h1>
+          <p className="text-gray-600">Gestiona el personal administrativo y sus permisos</p>
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="bg-lime-500 text-white px-4 py-2 rounded-lg hover:bg-lime-600 transition-colors flex items-center space-x-2"
+          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
         >
           <Plus size={20} />
-          <span>Add Staff</span>
+          <span>Agregar Personal</span>
         </button>
       </div>
 
@@ -107,21 +107,21 @@ export default function StaffManagement() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Search staff..."
+             placeholder="Buscar personal..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+           className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
           >
-            <option value="all">All Roles</option>
-            <option value="admin">Admin</option>
+           <option value="all">Todos los Roles</option>
+           <option value="admin">Administrador</option>
             <option value="moderator">Moderator</option>
-            <option value="organizer">Organizer</option>
+           <option value="organizer">Organizador</option>
           </select>
         </div>
       </div>
@@ -140,7 +140,9 @@ export default function StaffManagement() {
                 <div>
                   <h3 className="font-semibold text-gray-900">{member.name}</h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(member.role)}`}>
-                    {member.role}
+                    {member.role === 'admin' ? 'Administrador' :
+                     member.role === 'moderator' ? 'Moderador' :
+                     member.role === 'organizer' ? 'Organizador' : member.role}
                   </span>
                 </div>
               </div>
@@ -164,7 +166,7 @@ export default function StaffManagement() {
                 <span>{member.phone}</span>
               </div>
               <div className="text-xs text-gray-500 mt-3">
-                Joined: {new Date(member.joinDate).toLocaleDateString()}
+                Se unió: {new Date(member.joinDate).toLocaleDateString('es-ES')}
               </div>
             </div>
           </div>
@@ -176,7 +178,7 @@ export default function StaffManagement() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-md">
             <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-semibold text-gray-900">Add New Staff</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Agregar Nuevo Personal</h2>
               <button
                 onClick={() => setShowAddForm(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -187,50 +189,50 @@ export default function StaffManagement() {
 
             <form onSubmit={handleAddStaff} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre Completo *</label>
                 <input
                   type="text"
                   required
                   value={newStaff.name}
                   onChange={(e) => setNewStaff({ ...newStaff, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                  placeholder="Enter full name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Ingresa el nombre completo"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico *</label>
                 <input
                   type="email"
                   required
                   value={newStaff.email}
                   onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                  placeholder="Enter email address"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Ingresa el correo electrónico"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
                 <input
                   type="tel"
                   value={newStaff.phone}
                   onChange={(e) => setNewStaff({ ...newStaff, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-                  placeholder="Enter phone number"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Ingresa el número de teléfono"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Rol</label>
                 <select
                   value={newStaff.role}
                   onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value as Staff['role'] })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
-                  <option value="organizer">Organizer</option>
-                  <option value="moderator">Moderator</option>
-                  <option value="admin">Admin</option>
+                  <option value="organizer">Organizador</option>
+                  <option value="moderator">Moderador</option>
+                  <option value="admin">Administrador</option>
                 </select>
               </div>
 
@@ -240,13 +242,13 @@ export default function StaffManagement() {
                   onClick={() => setShowAddForm(false)}
                   className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                 >
-                  Cancel
+                  Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-lime-500 text-white rounded-lg hover:bg-lime-600 transition-colors"
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                 >
-                  Add Staff
+                  Agregar Personal
                 </button>
               </div>
             </form>

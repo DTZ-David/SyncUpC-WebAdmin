@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => void;
@@ -13,6 +13,16 @@ export default function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProp
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [animationComplete, setAnimationComplete] = useState(false);
+
+  useEffect(() => {
+    // Trigger animation after component mounts
+    const timer = setTimeout(() => {
+      setAnimationComplete(true);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,22 +44,33 @@ export default function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProp
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Left Side - Image */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-lime-400 to-green-600 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-        <img
-          src="https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=800"
-          alt="Event Management"
-          className="w-full h-full object-cover"
-        />
+      {/* Left Side - Green Background with Animation */}
+      <div className="hidden lg:flex lg:w-1/2 bg-green-600 relative overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white p-8">
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl p-8">
-              <Calendar className="mx-auto mb-4" size={64} />
-              <h1 className="text-4xl font-bold mb-4">Event Admin</h1>
-              <p className="text-xl opacity-90">
-                Gestiona tus eventos de manera profesional y eficiente
-              </p>
+            <div className={`transition-all duration-1000 ease-out ${
+              animationComplete 
+                ? 'transform translate-y-0 opacity-100 flex items-center justify-center space-x-4' 
+                : 'transform translate-y-8 opacity-0'
+            }`}>
+              {/* Logo SVG */}
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                <svg width="40" height="40" viewBox="0 0 100 100" className="text-green-600">
+                  <circle cx="50" cy="50" r="45" fill="currentColor" stroke="white" strokeWidth="2"/>
+                  <text x="50" y="60" textAnchor="middle" fontSize="36" fontWeight="bold" fill="white">S</text>
+                </svg>
+              </div>
+              
+              {/* Divider */}
+              <div className="w-px h-12 bg-white opacity-50"></div>
+              
+              {/* Brand Text */}
+              <div className="text-left">
+                <h1 className="text-4xl font-bold">SyncUpC</h1>
+                <p className="text-xl opacity-90 mt-1">
+                  Gestiona tus eventos de manera profesional
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -60,10 +81,13 @@ export default function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProp
         <div className="w-full max-w-md">
           {/* Mobile Header */}
           <div className="lg:hidden text-center mb-8">
-            <div className="bg-lime-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Calendar className="text-white" size={32} />
+            <div className="bg-green-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg width="32" height="32" viewBox="0 0 100 100" className="text-white">
+                <circle cx="50" cy="50" r="45" fill="currentColor"/>
+                <text x="50" y="60" textAnchor="middle" fontSize="36" fontWeight="bold" fill="green">S</text>
+              </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Event Admin</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">SyncUpC</h1>
           </div>
 
           {/* Login Form */}
@@ -87,7 +111,7 @@ export default function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProp
                     required
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent transition-colors"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                     placeholder="Ingresa tu correo"
                   />
                 </div>
@@ -106,7 +130,7 @@ export default function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProp
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent transition-colors"
+                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                     placeholder="Ingresa tu contraseña"
                   />
                   <button
@@ -123,7 +147,7 @@ export default function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProp
               <div className="text-right">
                 <button
                   type="button"
-                  className="text-sm text-lime-600 hover:text-lime-700 transition-colors"
+                  className="text-sm text-green-600 hover:text-green-700 transition-colors"
                 >
                   ¿Olvidaste tu contraseña?
                 </button>
@@ -133,7 +157,7 @@ export default function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProp
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-lime-500 text-white py-3 rounded-lg hover:bg-lime-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
               </button>
@@ -145,7 +169,7 @@ export default function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProp
                 ¿No tienes una cuenta?{' '}
                 <button
                   onClick={onSwitchToRegister}
-                  className="text-lime-600 hover:text-lime-700 font-medium transition-colors"
+                  className="text-green-600 hover:text-green-700 font-medium transition-colors"
                 >
                   Crear Cuenta
                 </button>

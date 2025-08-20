@@ -1,5 +1,5 @@
 // components/Events/EventForm.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { EventFormData, EventFormProps } from "./Types/EventTypes";
 import { BasicInfoSection } from "./Sections/BasicInfoSection";
@@ -38,9 +38,45 @@ const initialFormData: EventFormData = {
 export default function EventForm({ isOpen, onClose, event }: EventFormProps) {
   const [formData, setFormData] = useState<EventFormData>({
     ...initialFormData,
-    ...(event || {}),
   });
+  const [currentImage, setCurrentImage] = useState<string>("");
 
+  useEffect(() => {
+    if (event) {
+      // Precargar datos del evento para edición
+      setFormData({
+        eventTitle: event.eventTitle || "",
+        eventObjective: event.eventObjective || "",
+        eventLocation: event.eventLocation || "",
+        address: event.address || "",
+        startDate: event.startDate || "",
+        endDate: event.endDate || "",
+        registrationStart: event.registrationStart || "",
+        registrationEnd: event.registrationEnd || "",
+        careerIds: event.careerIds || [],
+        targetTeachers: event.targetTeachers || false,
+        targetStudents: event.targetStudents || false,
+        targetAdministrative: event.targetAdministrative || false,
+        targetGeneral: event.targetGeneral || false,
+        isVirtual: event.isVirtual || false,
+        meetingUrl: event.meetingUrl || "",
+        maxCapacity: event.maxCapacity?.toString() || "",
+        requiresRegistration:
+          event.requiresRegistration !== undefined
+            ? event.requiresRegistration
+            : true,
+        isPublic: event.isPublic !== undefined ? event.isPublic : true,
+        tags: event.tags || [],
+        imageUrls: event.imageUrls || [],
+        additionalDetails: event.additionalDetails || "",
+      });
+      setCurrentImage(event.image || "");
+    } else {
+      // Resetear formulario para nuevo evento
+      setFormData(initialFormData);
+      setCurrentImage("");
+    }
+  }, [event]);
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -89,10 +125,15 @@ export default function EventForm({ isOpen, onClose, event }: EventFormProps) {
   };
 
   const handleImageUpload = (files: FileList | null) => {
-    // Implementar lógica de carga de imagen
     if (files && files.length > 0) {
-      console.log("Uploading image:", files[0]);
-      // Aquí puedes implementar la lógica para cargar la imagen
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          setCurrentImage(e.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -127,6 +168,7 @@ export default function EventForm({ isOpen, onClose, event }: EventFormProps) {
           <DateTimeInfoSection
             formData={formData}
             onChange={handleInputChange}
+            showRegistrationDates={formData.requiresRegistration}
           />
 
           {/* Target Audience */}
@@ -170,7 +212,11 @@ export default function EventForm({ isOpen, onClose, event }: EventFormProps) {
           </div>
 
           {/* Event Image */}
-          <ImageUpload onImageUpload={handleImageUpload} />
+          <ImageUpload
+            onImageUpload={handleImageUpload}
+            currentImage={currentImage}
+            isEditing={!!event}
+          />
 
           {/* Form Actions */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
@@ -183,7 +229,7 @@ export default function EventForm({ isOpen, onClose, event }: EventFormProps) {
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-lime-500 text-white rounded-lg hover:bg-lime-600 transition-colors"
+              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
             >
               {event ? "Actualizar Evento" : "Crear Evento"}
             </button>

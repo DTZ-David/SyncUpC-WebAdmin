@@ -9,6 +9,14 @@ interface Event {
   eventLocation: string;
   attendees: number;
   confirmed: number;
+  eventObjective: string;
+  address: string;
+  isVirtual: boolean;
+  maxCapacity: number;
+  requiresRegistration: boolean;
+  isPublic: boolean;
+  tags: Array<string>;
+  meetingUrl?: string;
   status: "draft" | "published" | "completed" | "cancelled";
   image: string;
 }
@@ -17,12 +25,14 @@ interface EventListProps {
   onCreateEvent: () => void;
   onEditEvent: (event: Event) => void;
   onViewAttendees: (eventId: number) => void;
+  onViewDetails: (event: Event) => void;
 }
 
 export default function EventList({
   onCreateEvent,
   onEditEvent,
   onViewAttendees,
+  onViewDetails,
 }: EventListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -39,6 +49,14 @@ export default function EventList({
       status: "published",
       image:
         "https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=400",
+      eventObjective:
+        "Semana internacional de descubrimiento con actividades culturales y académicas para estudiantes.",
+      address: "Campus UPC Sabanas, Edificio Principal",
+      isVirtual: false,
+      maxCapacity: 50,
+      requiresRegistration: true,
+      isPublic: true,
+      tags: ["educación", "internacional", "estudiantes"],
     },
     {
       id: 2,
@@ -51,6 +69,14 @@ export default function EventList({
       status: "published",
       image:
         "https://images.pexels.com/photos/2774556/pexels-photo-2774556.jpeg?auto=compress&cs=tinysrgb&w=400",
+      eventObjective:
+        "Congreso enfocado en las últimas tendencias tecnológicas y su impacto en la industria.",
+      address: "Centro de Convenciones, Auditorio Central",
+      isVirtual: false,
+      maxCapacity: 500,
+      requiresRegistration: true,
+      isPublic: true,
+      tags: ["tecnología", "innovación", "congreso"],
     },
     {
       id: 3,
@@ -63,6 +89,14 @@ export default function EventList({
       status: "completed",
       image:
         "https://images.pexels.com/photos/1181263/pexels-photo-1181263.jpeg?auto=compress&cs=tinysrgb&w=400",
+      eventObjective:
+        "Encuentro para conectar egresados con estudiantes actuales y facilitar mentorías profesionales.",
+      address: "Universidad, Auditorio Principal",
+      isVirtual: false,
+      maxCapacity: 100,
+      requiresRegistration: true,
+      isPublic: false,
+      tags: ["networking", "mentores", "egresados"],
     },
     {
       id: 4,
@@ -75,6 +109,15 @@ export default function EventList({
       status: "draft",
       image:
         "https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg?auto=compress&cs=tinysrgb&w=400",
+      eventObjective:
+        "Taller práctico sobre desarrollo web moderno con tecnologías actuales.",
+      address: "Laboratorio de Computación A",
+      isVirtual: true,
+      meetingUrl: "https://meet.google.com/abc-defg-hij",
+      maxCapacity: 30,
+      requiresRegistration: true,
+      isPublic: true,
+      tags: ["desarrollo", "web", "taller"],
     },
   ];
 
@@ -99,7 +142,7 @@ export default function EventList({
   const getStatusColor = (status: Event["status"]) => {
     switch (status) {
       case "published":
-        return "bg-lime-100 text-lime-700";
+        return "bg-green-100 text-green-700";
       case "draft":
         return "bg-yellow-100 text-yellow-700";
       case "completed":
@@ -150,11 +193,11 @@ export default function EventList({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
               <option value="all">Todos los Estados</option>
               <option value="published">Publicado</option>
-              <option value="draft">Draft</option>
+              <option value="draft">Borrador</option>
               <option value="completed">Completado</option>
               <option value="cancelled">Cancelado</option>
             </select>
@@ -181,7 +224,15 @@ export default function EventList({
                     event.status
                   )}`}
                 >
-                  {event.status}
+                  {event.status === "published"
+                    ? "Publicado"
+                    : event.status === "draft"
+                    ? "Borrador"
+                    : event.status === "completed"
+                    ? "Completado"
+                    : event.status === "cancelled"
+                    ? "Cancelado"
+                    : event.status}
                 </span>
               </div>
             </div>
@@ -213,7 +264,7 @@ export default function EventList({
               <div className="flex items-center justify-between">
                 <button
                   onClick={() => onViewAttendees(event.id)}
-                  className="text-lime-600 hover:text-lime-700 flex items-center space-x-1 text-sm"
+                  className="text-green-600 hover:text-green-700 flex items-center space-x-1 text-sm"
                 >
                   <Users size={16} />
                   <span>Ver Asistentes</span>
@@ -221,6 +272,7 @@ export default function EventList({
 
                 <div className="flex items-center space-x-2">
                   <button
+                    onClick={() => onViewDetails(event)}
                     className="p-1.5 text-gray-600 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
                     title="Ver Detalles"
                   >
@@ -228,7 +280,7 @@ export default function EventList({
                   </button>
                   <button
                     onClick={() => onEditEvent(event)}
-                    className="p-1.5 text-gray-600 hover:text-lime-600 rounded-lg hover:bg-lime-50 transition-colors"
+                    className="p-1.5 text-gray-600 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors"
                     title="Editar Evento"
                   >
                     <Edit size={16} />

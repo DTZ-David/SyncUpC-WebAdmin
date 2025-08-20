@@ -189,8 +189,8 @@ export default function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFo
                   onChange={handleInputChange}
                   className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent transition-colors"
                 >
-                  <option value="organizer">Organizador</option>
-                  <option value="moderator">Moderador</option>
+                  <option value="organizer">Organizador de Eventos</option>
+                  <option value="moderator">Moderador de Eventos</option>
                   <option value="admin">Administrador</option>
                 </select>
               </div>
@@ -257,7 +257,7 @@ export default function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFo
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-lime-500 text-white py-3 rounded-lg hover:bg-lime-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Creando Cuenta...' : 'Crear Cuenta'}
               </button>
@@ -269,7 +269,7 @@ export default function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFo
                 ¿Ya tienes una cuenta?{' '}
                 <button
                   onClick={onSwitchToLogin}
-                  className="text-lime-600 hover:text-lime-700 font-medium transition-colors"
+                  className="text-green-600 hover:text-green-700 font-medium transition-colors"
                 >
                   Iniciar Sesión
                 </button>

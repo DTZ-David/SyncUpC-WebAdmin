@@ -1,13 +1,12 @@
-import React from 'react';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Users, 
-  UserPlus, 
+import {
+  LayoutDashboard,
+  Calendar,
+  Users,
+  UserPlus,
   Settings,
   Menu,
-  X
-} from 'lucide-react';
+  X,
+} from "lucide-react";
 
 interface SidebarProps {
   activeTab: string;
@@ -16,18 +15,18 @@ interface SidebarProps {
   setIsMobileMenuOpen: (open: boolean) => void;
 }
 
-export default function Sidebar({ 
-  activeTab, 
-  setActiveTab, 
-  isMobileMenuOpen, 
-  setIsMobileMenuOpen 
+export default function Sidebar({
+  activeTab,
+  setActiveTab,
+  isMobileMenuOpen,
+  setIsMobileMenuOpen,
 }: SidebarProps) {
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'events', label: 'Events', icon: Calendar },
-    { id: 'attendees', label: 'Attendees', icon: Users },
-    { id: 'staff', label: 'Admin Staff', icon: UserPlus },
-    { id: 'settings', label: 'Settings', icon: Settings }
+    { id: "dashboard", label: "Panel Principal", icon: LayoutDashboard },
+    { id: "events", label: "Eventos", icon: Calendar },
+    { id: "attendees", label: "Asistentes", icon: Users },
+    { id: "staff", label: "Personal Admin", icon: UserPlus },
+    { id: "settings", label: "Configuración", icon: Settings },
   ];
 
   const handleMenuClick = (id: string) => {
@@ -54,14 +53,20 @@ export default function Sidebar({
       )}
 
       {/* Sidebar */}
-      <div className={`
+      <div
+        className={`
         fixed lg:fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
-        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
+        ${
+          isMobileMenuOpen
+            ? "translate-x-0"
+            : "-translate-x-full lg:translate-x-0"
+        }
+      `}
+      >
         <div className="p-6 border-b">
-          <h1 className="text-xl font-bold text-gray-800">Event Admin</h1>
+          <h1 className="text-xl font-bold text-gray-800">SyncUpC Admin</h1>
         </div>
-        
+
         <nav className="mt-6">
           {menuItems.map(({ id, label, icon: Icon }) => (
             <button
@@ -69,11 +74,21 @@ export default function Sidebar({
               onClick={() => handleMenuClick(id)}
               className={`
                 w-full flex items-center px-6 py-3 text-left transition-colors duration-200
-                ${activeTab === id 
-                  ? 'bg-lime-50 border-r-3 border-lime-500 text-lime-700' 
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+                ${
+                  activeTab === id
+                    ? "bg-green-50 border-r-3 border-green-500 text-green-700"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
                 }
               `}
+              style={
+                activeTab === id
+                  ? {
+                      backgroundColor: "#B9FF5020",
+                      borderRightColor: "#B9FF50",
+                      color: "#B9FF50",
+                    }
+                  : {}
+              }
             >
               <Icon size={20} className="mr-3" />
               {label}

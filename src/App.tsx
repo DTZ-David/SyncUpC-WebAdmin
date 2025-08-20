@@ -1,34 +1,38 @@
-import React, { useState } from 'react';
-import LoginForm from './components/Auth/LoginForm';
-import RegisterForm from './components/Auth/RegisterForm';
-import Header from './components/Layout/Header';
-import Sidebar from './components/Layout/Sidebar';
-import Dashboard from './components/Dashboard/Dashboard';
-import EventList from './components/Events/EventList';
-import EventForm from './components/Events/EventForm';
-import AttendeeList from './components/Attendees/AttendeeList';
-import StaffManagement from './components/Staff/StaffManagement';
+import { useState } from "react";
+import LoginForm from "./components/Auth/LoginForm";
+import RegisterForm from "./components/Auth/RegisterForm";
+import Header from "./components/Layout/Header";
+import Sidebar from "./components/Layout/Sidebar";
+import Dashboard from "./components/Dashboard/Dashboard";
+import EventList from "./components/Events/EventList";
+import EventForm from "./components/Events/EventForm";
+import AttendeeList from "./components/Attendees/AttendeeList";
+import EventDetails from "./components/Events/EventDetails";
+import StaffManagement from "./components/Staff/StaffManagement";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showEventForm, setShowEventForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [viewingEventAttendees, setViewingEventAttendees] = useState<number | null>(null);
+  const [viewingEventAttendees, setViewingEventAttendees] = useState<
+    number | null
+  >(null);
+  const [viewingEventDetails, setViewingEventDetails] = useState<any>(null);
 
   const handleLogin = (email: string, password: string) => {
     // In a real app, you would validate credentials with your backend
     // For demo purposes, we'll accept any credentials
     const userData = {
       id: 1,
-      name: email === 'admin@company.com' ? 'Admin User' : 'Staff Member',
+      name: email === "admin@company.com" ? "Admin User" : "Staff Member",
       email: email,
-      role: email === 'admin@company.com' ? 'admin' : 'organizer'
+      role: email === "admin@company.com" ? "admin" : "organizer",
     };
-    
+
     setCurrentUser(userData);
     setIsAuthenticated(true);
   };
@@ -37,9 +41,9 @@ function App() {
     // In a real app, you would send this data to your backend
     const newUser = {
       id: Date.now(),
-      ...userData
+      ...userData,
     };
-    
+
     setCurrentUser(newUser);
     setIsAuthenticated(true);
   };
@@ -47,7 +51,7 @@ function App() {
   const handleLogout = () => {
     setCurrentUser(null);
     setIsAuthenticated(false);
-    setActiveTab('dashboard');
+    setActiveTab("dashboard");
   };
 
   const handleCreateEvent = () => {
@@ -67,28 +71,37 @@ function App() {
 
   const handleViewAttendees = (eventId: number) => {
     setViewingEventAttendees(eventId);
-    setActiveTab('attendees');
+    setActiveTab("attendees");
   };
 
   const handleBackFromAttendees = () => {
     setViewingEventAttendees(null);
-    setActiveTab('events');
+    setActiveTab("events");
+  };
+
+  const handleViewEventDetails = (event: any) => {
+    setViewingEventDetails(event);
+    // No cambiar activeTab para mantener la navegación activa
+  };
+
+  const handleBackFromEventDetails = () => {
+    setViewingEventDetails(null);
   };
 
   // Show authentication forms if not authenticated
   if (!isAuthenticated) {
-    if (authMode === 'login') {
+    if (authMode === "login") {
       return (
         <LoginForm
           onLogin={handleLogin}
-          onSwitchToRegister={() => setAuthMode('register')}
+          onSwitchToRegister={() => setAuthMode("register")}
         />
       );
     } else {
       return (
         <RegisterForm
           onRegister={handleRegister}
-          onSwitchToLogin={() => setAuthMode('login')}
+          onSwitchToLogin={() => setAuthMode("login")}
         />
       );
     }
@@ -97,62 +110,83 @@ function App() {
   const renderMainContent = () => {
     if (viewingEventAttendees) {
       return (
-        <AttendeeList 
+        <AttendeeList
           eventId={viewingEventAttendees}
           onBack={handleBackFromAttendees}
         />
       );
     }
 
+    if (viewingEventDetails) {
+      return (
+        <EventDetails
+          event={viewingEventDetails}
+          onBack={handleBackFromEventDetails}
+          onEdit={handleEditEvent}
+        />
+      );
+    }
+
     switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'events':
+      case "dashboard":
+        return <Dashboard onViewEventDetails={handleViewEventDetails} />;
+      case "events":
         return (
-          <EventList 
+          <EventList
             onCreateEvent={handleCreateEvent}
             onEditEvent={handleEditEvent}
             onViewAttendees={handleViewAttendees}
+            onViewDetails={handleViewEventDetails}
           />
         );
-      case 'attendees':
+      case "attendees":
         return <AttendeeList />;
-      case 'staff':
+      case "staff":
         return <StaffManagement />;
-      case 'settings':
+      case "settings":
         return (
           <div className="space-y-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-              <p className="text-gray-600">Manage your application settings</p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Configuración
+              </h1>
+              <p className="text-gray-600">
+                Gestiona la configuración de tu aplicación
+              </p>
             </div>
             <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-              <p className="text-gray-600">Settings panel coming soon...</p>
+              <p className="text-gray-600">
+                Panel de configuración próximamente...
+              </p>
             </div>
           </div>
         );
       default:
-        return <Dashboard />;
+        return (
+          <Dashboard
+            onViewEventDetails={function (event: any): void {
+              throw new Error("Function not implemented.");
+            }}
+          />
+        );
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-hidden">
-      <Sidebar 
+      <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
-      
+
       <main className="flex-1 lg:ml-64 overflow-auto">
         <Header user={currentUser} onLogout={handleLogout} />
-        <div className="p-4 lg:p-8">
-        {renderMainContent()}
-        </div>
+        <div className="p-4 lg:p-8">{renderMainContent()}</div>
       </main>
 
-      <EventForm 
+      <EventForm
         isOpen={showEventForm}
         onClose={handleCloseEventForm}
         event={editingEvent}

@@ -71,4 +71,6 @@ export interface TagsInputProps {
 
 export interface ImageUploadProps {
   onImageUpload?: (files: FileList | null) => void;
+  currentImage?: string;
+  isEditing?: boolean;
 }

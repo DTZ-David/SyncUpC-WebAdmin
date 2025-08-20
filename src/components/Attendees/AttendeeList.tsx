@@ -116,10 +116,10 @@ export default function AttendeeList({ eventId, onBack }: AttendeeListProps) {
         </div>
         <button
           onClick={handleExportToExcel}
-          className="bg-lime-500 text-white px-4 py-2 rounded-lg hover:bg-lime-600 transition-colors flex items-center space-x-2"
+          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
         >
           <Download size={20} />
-          <span>Export to Excel</span>
+          <span>Exportar a Excel</span>
         </button>
       </div>
 
@@ -133,10 +133,10 @@ export default function AttendeeList({ eventId, onBack }: AttendeeListProps) {
             />
             <input
               type="text"
-              placeholder="Search attendees..."
+              placeholder="Buscar asistentes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
           <div className="flex items-center space-x-2">
@@ -144,12 +144,12 @@ export default function AttendeeList({ eventId, onBack }: AttendeeListProps) {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
-              <option value="all">All Status</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="pending">Pending</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="all">Todos los Estados</option>
+              <option value="confirmed">Confirmado</option>
+              <option value="pending">Pendiente</option>
+              <option value="cancelled">Cancelado</option>
             </select>
           </div>
         </div>
@@ -161,13 +161,13 @@ export default function AttendeeList({ eventId, onBack }: AttendeeListProps) {
           <div className="text-2xl font-bold text-gray-900">
             {attendees.filter((a) => a.status === "confirmed").length}
           </div>
-          <div className="text-sm text-gray-600">Confirmed</div>
+          <div className="text-sm text-gray-600">Confirmados</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
           <div className="text-2xl font-bold text-gray-900">
             {attendees.filter((a) => a.status === "pending").length}
           </div>
-          <div className="text-sm text-gray-600">Pending</div>
+          <div className="text-sm text-gray-600">Pendientes</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
           <div className="text-2xl font-bold text-gray-900">
@@ -184,19 +184,19 @@ export default function AttendeeList({ eventId, onBack }: AttendeeListProps) {
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
                 <th className="text-left py-3 px-4 font-medium text-gray-700">
-                  Attendee
+                  Asistente
                 </th>
                 <th className="text-left py-3 px-4 font-medium text-gray-700">
-                  Contact
+                  Contacto
                 </th>
                 <th className="text-left py-3 px-4 font-medium text-gray-700">
-                  Registration Date
+                  Fecha de Registro
                 </th>
                 <th className="text-left py-3 px-4 font-medium text-gray-700">
-                  Status
+                  Estado
                 </th>
                 <th className="text-left py-3 px-4 font-medium text-gray-700">
-                  Actions
+                  Acciones
                 </th>
               </tr>
             </thead>
@@ -239,16 +239,18 @@ export default function AttendeeList({ eventId, onBack }: AttendeeListProps) {
                         attendee.status
                       )}`}
                     >
-                      {attendee.status}
+                      {attendee.status === 'confirmed' ? 'Confirmado' :
+                       attendee.status === 'pending' ? 'Pendiente' :
+                       attendee.status === 'cancelled' ? 'Cancelado' : attendee.status}
                     </span>
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center space-x-2">
                       <button
-                        className="text-lime-600 hover:text-lime-700 text-sm"
+                        className="text-green-600 hover:text-green-700 text-sm"
                         onClick={() => window.open(`mailto:${attendee.email}`)}
                       >
-                        Email
+                        Enviar Email
                       </button>
                     </div>
                   </td>
