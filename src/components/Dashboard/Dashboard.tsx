@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import StatsCard from "./StatsCard";
 import {
   Calendar,
@@ -105,24 +105,47 @@ export default function Dashboard({ onViewEventDetails }: DashboardProps) {
     },
   ];
 
-  // Preparar eventos para mostrar (últimos 3)
+  // En tu Dashboard.tsx, cambia la parte donde preparas los recentEvents:
+
   const recentEvents = events
     .sort(
       (a, b) =>
-        new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+        new Date(
+          b.eventDate.split(" ")[0].split("/").reverse().join("-")
+        ).getTime() -
+        new Date(
+          a.eventDate.split(" ")[0].split("/").reverse().join("-")
+        ).getTime()
     )
     .slice(0, 3)
-    .map((event) => ({
-      title: event.eventTitle,
-      date: eventService.formatEventDate(event.eventDate),
-      attendees: eventService.getParticipantCount(event),
-      status: eventService.getEventStatus(event.eventDate),
-      location: event.eventLocation,
-      image:
-        event.imageUrls?.[0] ||
-        "https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=400",
-      ...event, // Incluir todos los datos del evento
-    }));
+    .map((event) => {
+      // Extraer fecha y hora del campo eventDate
+      const [datePart, timePart] = event.eventDate.split(" ");
+
+      return {
+        // Campos originales del backend
+        ...event,
+
+        // Campos adicionales para compatibilidad
+        title: event.eventTitle,
+        date: eventService.formatEventDate(event.eventDate),
+        location: event.eventLocation,
+        time: timePart, // Extraer la hora del campo eventDate
+
+        // Otros campos calculados
+        attendees: eventService.getParticipantCount(event),
+        status: eventService.getEventStatus(event.eventDate),
+        image:
+          event.imageUrls?.[0] ||
+          "https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=400",
+
+        // Campos adicionales que EventDetails espera
+        confirmed: Math.round(eventService.getParticipantCount(event) * 0.8), // Simulado
+        requiresRegistration: true, // Por defecto
+        isPublic: true, // Por defecto
+        isVirtual: false, // Por defecto presencial
+      };
+    });
 
   if (loading) {
     return (

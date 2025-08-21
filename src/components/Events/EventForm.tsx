@@ -47,46 +47,29 @@ export default function EventForm({
     ...initialFormData,
   });
   const [currentImage, setCurrentImage] = useState<string>("");
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null); // ← NUEVO: Para el archivo
-  const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false); // ← NUEVO: Estado de carga de imagen
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // ← NUEVO: Estado de carga
-  const [submitError, setSubmitError] = useState<string>(""); // ← NUEVO: Estado de error
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string>("");
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
   useEffect(() => {
     if (event) {
-      // Precargar datos del evento para edición
-      setFormData({
-        eventTitle: event.eventTitle || "",
-        eventObjective: event.eventObjective || "",
-        eventLocation: event.eventLocation || "",
-        address: event.address || "",
-        startDate: event.startDate || "",
-        endDate: event.endDate || "",
-        registrationStart: event.registrationStart || "",
-        registrationEnd: event.registrationEnd || "",
-        careerIds: event.careerIds || [],
-        targetTeachers: event.targetTeachers || false,
-        targetStudents: event.targetStudents || false,
-        targetAdministrative: event.targetAdministrative || false,
-        targetGeneral: event.targetGeneral || false,
-        isVirtual: event.isVirtual || false,
-        meetingUrl: event.meetingUrl || "",
-        maxCapacity: event.maxCapacity?.toString() || "",
-        requiresRegistration:
-          event.requiresRegistration !== undefined
-            ? event.requiresRegistration
-            : true,
-        isPublic: event.isPublic !== undefined ? event.isPublic : true,
-        tags: event.tags || [],
-        imageUrls: event.imageUrls || [],
-        additionalDetails: event.additionalDetails || "",
-      });
-      setCurrentImage(event.image || "");
+      // Modo edición: mapear datos del backend al formulario
+      console.log("Evento recibido para editar:", event);
+
+      const mappedData = eventService.mapBackendEventToFormData(event);
+      console.log("Datos mapeados para el formulario:", mappedData);
+
+      setFormData(mappedData);
+      setCurrentImage(event.imageUrls?.[0] || event.image || "");
+      setIsEditMode(true);
     } else {
-      // Resetear formulario para nuevo evento
+      // Modo creación: resetear formulario
       setFormData(initialFormData);
       setCurrentImage("");
-      setSelectedImageFile(null); // ← NUEVO
+      setIsEditMode(false);
+      setSelectedImageFile(null);
     }
 
     // Limpiar estados de error y carga cuando se abre/cierra
@@ -96,7 +79,6 @@ export default function EventForm({
 
   if (!isOpen) return null;
 
-  // ← NUEVO: Validación básica del formulario
   const validateForm = (): string[] => {
     const errors: string[] = [];
 
@@ -110,10 +92,6 @@ export default function EventForm({
 
     if (!formData.startDate) {
       errors.push("La fecha de inicio es obligatoria");
-    }
-
-    if (!formData.endDate) {
-      errors.push("La fecha de fin es obligatoria");
     }
 
     if (formData.startDate && formData.endDate) {
@@ -150,7 +128,6 @@ export default function EventForm({
     return errors;
   };
 
-  // ← MODIFICADO: HandleSubmit con integración de API
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -167,7 +144,7 @@ export default function EventForm({
     try {
       let imageUrl = currentImage;
 
-      // ← NUEVO: Si hay una imagen nueva, subirla a Supabase
+      // Si hay una imagen nueva, subirla a Supabase
       if (selectedImageFile) {
         setIsUploadingImage(true);
         const uploadResult = await supabaseService.uploadImage(
@@ -189,34 +166,59 @@ export default function EventForm({
         imageUrls: imageUrl ? [imageUrl] : [],
       };
 
-      // Transformar y enviar datos
-      const apiData = eventService.transformFormDataToApiRequest(finalFormData);
-      const response = await eventService.createEvent(apiData);
+      let response;
+
+      if (isEditMode) {
+        // Actualizar evento existente
+        console.log("Actualizando evento con datos:", finalFormData);
+        const apiData =
+          eventService.transformFormDataToUpdateRequest(finalFormData);
+        console.log("Datos transformados para API de actualización:", apiData);
+        response = await eventService.updateEvent(apiData);
+      } else {
+        // Crear nuevo evento
+        console.log("Creando nuevo evento con datos:", finalFormData);
+        const apiData =
+          eventService.transformFormDataToApiRequest(finalFormData);
+        console.log("Datos transformados para API de creación:", apiData);
+        response = await eventService.createEvent(apiData);
+      }
 
       if (response.isSuccess) {
-        console.log("Evento creado exitosamente:", response);
+        console.log(
+          `Evento ${isEditMode ? "actualizado" : "creado"} exitosamente:`,
+          response
+        );
 
-        // Opcional: callback para notificar al componente padre
+        // Callback para notificar al componente padre
         if (onEventCreated && response.data) {
           onEventCreated(response.data);
         }
 
         onClose();
 
-        // Opcional: mostrar mensaje de éxito
-        alert("Evento creado exitosamente");
+        // Mostrar mensaje de éxito
+        alert(`Evento ${isEditMode ? "actualizado" : "creado"} exitosamente`);
       } else {
-        throw new Error(response.message || "Error al crear el evento");
+        throw new Error(
+          response.message ||
+            `Error al ${isEditMode ? "actualizar" : "crear"} el evento`
+        );
       }
     } catch (error: any) {
-      console.error("Error creating event:", error);
+      console.error(
+        `Error ${isEditMode ? "updating" : "creating"} event:`,
+        error
+      );
       setSubmitError(
         error.message ||
-          "Ocurrió un error al crear el evento. Por favor intenta nuevamente."
+          `Ocurrió un error al ${
+            isEditMode ? "actualizar" : "crear"
+          } el evento. Por favor intenta nuevamente.`
       );
     } finally {
       setIsSubmitting(false);
-      setIsUploadingImage(false); // ← NUEVO
+      setIsUploadingImage(false);
     }
   };
 
@@ -266,7 +268,7 @@ export default function EventForm({
         return;
       }
 
-      setSelectedImageFile(file); // ← NUEVO: Guardar el archivo
+      setSelectedImageFile(file);
 
       // Mostrar preview
       const reader = new FileReader();
@@ -288,12 +290,12 @@ export default function EventForm({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white">
           <h2 className="text-xl font-semibold text-gray-900">
-            {event ? "Editar Evento" : "Crear Nuevo Evento"}
+            {isEditMode ? "Editar Evento" : "Crear Nuevo Evento"}
           </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
-            disabled={isSubmitting} // ← NUEVO: Deshabilitar durante envío
+            disabled={isSubmitting}
           >
             <X size={24} />
           </button>
@@ -301,10 +303,22 @@ export default function EventForm({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* ← NUEVO: Mostrar error de validación/API */}
+          {/* Mostrar error de validación/API */}
           {submitError && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               <p className="text-sm">{submitError}</p>
+            </div>
+          )}
+
+          {/* Mostrar información de depuración en desarrollo */}
+          {process.env.NODE_ENV === "development" && isEditMode && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg">
+              <p className="text-sm">
+                <strong>Modo edición:</strong> Editando evento ID: {event?.id}
+              </p>
+              <p className="text-sm">
+                <strong>Fecha de inicio:</strong> {formData.startDate}
+              </p>
             </div>
           )}
 
@@ -361,7 +375,7 @@ export default function EventForm({
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
               placeholder="Información adicional sobre el evento"
-              disabled={isSubmitting} // ← NUEVO
+              disabled={isSubmitting}
             />
           </div>
 
@@ -369,7 +383,7 @@ export default function EventForm({
           <ImageUpload
             onImageUpload={handleImageUpload}
             currentImage={currentImage}
-            isEditing={!!event}
+            isEditing={isEditMode}
           />
 
           {/* Form Actions */}
@@ -378,20 +392,22 @@ export default function EventForm({
               type="button"
               onClick={onClose}
               className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              disabled={isSubmitting} // ← NUEVO
+              disabled={isSubmitting}
             >
               Cancelar
             </button>
             <button
               type="submit"
               className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={isSubmitting || isUploadingImage} // ← MODIFICADO
+              disabled={isSubmitting || isUploadingImage}
             >
               {isUploadingImage
                 ? "Subiendo imagen..."
                 : isSubmitting
-                ? "Creando..."
-                : event
+                ? isEditMode
+                  ? "Actualizando..."
+                  : "Creando..."
+                : isEditMode
                 ? "Actualizar Evento"
                 : "Crear Evento"}
             </button>

@@ -24,7 +24,7 @@ class SupabaseService {
    * @param folder - Carpeta dentro del bucket (opcional)
    * @returns Promise con la URL pública de la imagen
    */
-  async uploadImage(file: File): Promise<UploadImageResponse> {
+  async uploadImage(file: File, p0: string): Promise<UploadImageResponse> {
     try {
       // Generar nombre único para el archivo
       const fileExt = file.name.split(".").pop();

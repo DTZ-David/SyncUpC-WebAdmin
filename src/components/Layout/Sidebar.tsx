@@ -85,7 +85,7 @@ export default function Sidebar({
                   ? {
                       backgroundColor: "#B9FF5020",
                       borderRightColor: "#B9FF50",
-                      color: "#B9FF50",
+                      color: "#16A34A",
                     }
                   : {}
               }

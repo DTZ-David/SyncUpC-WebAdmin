@@ -3,11 +3,9 @@ import React from "react";
 import { Calendar } from "lucide-react";
 import { DateTimeInfoProps } from "../Types/EventTypes";
 
-export const DateTimeInfoSection: React.FC<DateTimeInfoProps & { showRegistrationDates?: boolean }> = ({
-  formData,
-  onChange,
-  showRegistrationDates = true,
-}) => {
+export const DateTimeInfoSection: React.FC<
+  DateTimeInfoProps & { showRegistrationDates?: boolean }
+> = ({ formData, onChange, showRegistrationDates = true }) => {
   return (
     <>
       {/* Event Dates */}
@@ -55,35 +53,35 @@ export const DateTimeInfoSection: React.FC<DateTimeInfoProps & { showRegistratio
 
       {/* Registration Period */}
       {showRegistrationDates && (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Inicio de Registro *
-          </label>
-          <input
-            type="datetime-local"
-            name="registrationStart"
-            required={showRegistrationDates}
-            value={formData.registrationStart}
-            onChange={onChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          />
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Inicio de Registro *
+            </label>
+            <input
+              type="datetime-local"
+              name="registrationStart"
+              required={showRegistrationDates}
+              value={formData.registrationStart}
+              onChange={onChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Fin de Registro *
-          </label>
-          <input
-            type="datetime-local"
-            name="registrationEnd"
-            required={showRegistrationDates}
-            value={formData.registrationEnd}
-            onChange={onChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Fin de Registro *
+            </label>
+            <input
+              type="datetime-local"
+              name="registrationEnd"
+              required={showRegistrationDates}
+              value={formData.registrationEnd}
+              onChange={onChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
         </div>
-      </div>
       )}
     </>
   );
