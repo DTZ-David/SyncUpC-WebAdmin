@@ -90,7 +90,7 @@ export default function LoginForm({
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left Side - Green Background with Animation */}
-      <div className="hidden lg:flex lg:w-1/2 bg-green-600 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary-600 relative overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white p-8">
             <div
@@ -101,41 +101,21 @@ export default function LoginForm({
               }`}
             >
               {/* Logo SVG */}
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 100 100"
-                  className="text-green-600"
-                >
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="currentColor"
-                    stroke="white"
-                    strokeWidth="2"
-                  />
-                  <text
-                    x="50"
-                    y="60"
-                    textAnchor="middle"
-                    fontSize="36"
-                    fontWeight="bold"
-                    fill="white"
-                  >
-                    S
-                  </text>
-                </svg>
+              <div className="w-16 h-16 flex items-center justify-center overflow-hidden">
+                <img
+                  src="/logo.svg"
+                  alt="Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
 
               {/* Divider */}
-              <div className="w-px h-12 bg-white opacity-50"></div>
+              <div className="w-px h-16 bg-black opacity-50"></div>
 
               {/* Brand Text */}
               <div className="text-left">
-                <h1 className="text-4xl font-bold">SyncUpC</h1>
-                <p className="text-xl opacity-90 mt-1">
+                <h1 className="text-4xl font-bold text-black">SyncUpC</h1>
+                <p className="text-xl text-black opacity-90 mt-1">
                   Gestiona tus eventos de manera profesional
                 </p>
               </div>
@@ -149,26 +129,11 @@ export default function LoginForm({
         <div className="w-full max-w-md">
           {/* Mobile Header */}
           <div className="lg:hidden text-center mb-8">
-            <div className="bg-green-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 100 100"
-                className="text-white"
-              >
-                <circle cx="50" cy="50" r="45" fill="currentColor" />
-                <text
-                  x="50"
-                  y="60"
-                  textAnchor="middle"
-                  fontSize="36"
-                  fontWeight="bold"
-                  fill="green"
-                >
-                  S
-                </text>
-              </svg>
-            </div>
+            <img
+              src="/logo.svg"
+              alt="Logo"
+              className="w-16 h-16 mx-auto mb-4"
+            />
             <h1 className="text-2xl font-bold text-gray-900 mb-2">SyncUpC</h1>
           </div>
 

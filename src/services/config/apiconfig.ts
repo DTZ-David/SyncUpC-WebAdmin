@@ -1,5 +1,4 @@
 // src/services/config/apiConfig.ts
-
 export const API_CONFIG = {
   BASE_URL:
     "https://syncupcwebapi-hufwfwhta2c7a9b7.westus2-01.azurewebsites.net/api",
@@ -18,5 +17,10 @@ export const ENDPOINTS = {
     LOGIN_APP: "/user/loginapp",
     REGISTER_STAFF: "/user/registerstaffmember",
   },
-  // Puedes seguir agregando más endpoints...
+  EVENT: {
+    GET_ALL: "/event/getallevents",
+    CREATE: "/event/create",
+    UPDATE: "/event/update",
+    DELETE: "/event/delete",
+  },
 };

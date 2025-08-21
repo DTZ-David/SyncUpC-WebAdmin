@@ -1,5 +1,4 @@
-import React from "react";
-import { LogOut, User, Bell } from "lucide-react";
+import { LogOut, Bell } from "lucide-react";
 
 interface HeaderProps {
   user: any;
@@ -56,7 +55,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
                     src={profilePicture}
                     alt={userName}
                     className="w-8 h-8 rounded-full object-cover border-2 border-green-200"
-                    onError={(e) => {
+                    onError={() => {
                       console.log(
                         "🔍 Header - Image load error, using fallback"
                       );

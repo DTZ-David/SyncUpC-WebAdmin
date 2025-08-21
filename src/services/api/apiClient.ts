@@ -24,30 +24,43 @@ class ApiClient {
   private baseURL: string;
   private timeout: number;
   private defaultHeaders: Record<string, string>;
+  private authToken: string | null = null; // ← NUEVO: Token separado
 
   constructor() {
     this.baseURL = API_CONFIG.BASE_URL;
     this.timeout = API_CONFIG.TIMEOUT;
-    this.defaultHeaders = API_CONFIG.HEADERS;
+    this.defaultHeaders = {
+      ...API_CONFIG.HEADERS,
+    };
   }
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    requireAuth: boolean = true // ← NUEVO: Parámetro para controlar auth
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
-    // Configurar headers
+    // Configurar headers base
     const headers = {
       ...this.defaultHeaders,
-      ...options.headers,
-    };
+      ...(options.headers || {}),
+    } as Record<string, string>;
+
+    // ← NUEVO: Solo añadir Authorization si se requiere Y existe token
+    if (requireAuth && this.authToken) {
+      headers["Authorization"] = `Bearer ${this.authToken}`;
+    }
 
     // Configurar timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
+      console.log("Making request to:", url);
+      console.log("Require auth:", requireAuth);
+      console.log("Headers:", headers);
+
       const response = await fetch(url, {
         ...options,
         headers,
@@ -57,11 +70,16 @@ class ApiClient {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new ApiError(
-          `HTTP Error: ${response.status}`,
-          response.status,
-          response.statusText
-        );
+        // Intentar obtener el mensaje de error del servidor
+        let errorMessage = `HTTP Error: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // Si no se puede parsear como JSON, usar el mensaje por defecto
+        }
+
+        throw new ApiError(errorMessage, response.status, response.statusText);
       }
 
       const contentType = response.headers.get("content-type");
@@ -89,55 +107,78 @@ class ApiClient {
     }
   }
 
-  async get<T>(endpoint: string, headers?: Record<string, string>): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: "GET",
-      headers,
-    });
+  async get<T>(
+    endpoint: string,
+    headers?: Record<string, string>,
+    requireAuth: boolean = true
+  ): Promise<T> {
+    return this.request<T>(
+      endpoint,
+      {
+        method: "GET",
+        headers,
+      },
+      requireAuth
+    );
   }
 
   async post<T>(
     endpoint: string,
     data?: any,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
+    requireAuth: boolean = true // ← NUEVO: Parámetro opcional
   ): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: "POST",
-      body: data ? JSON.stringify(data) : undefined,
-      headers,
-    });
+    return this.request<T>(
+      endpoint,
+      {
+        method: "POST",
+        body: data ? JSON.stringify(data) : undefined,
+        headers,
+      },
+      requireAuth
+    );
   }
 
   async put<T>(
     endpoint: string,
     data?: any,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
+    requireAuth: boolean = true
   ): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: "PUT",
-      body: data ? JSON.stringify(data) : undefined,
-      headers,
-    });
+    return this.request<T>(
+      endpoint,
+      {
+        method: "PUT",
+        body: data ? JSON.stringify(data) : undefined,
+        headers,
+      },
+      requireAuth
+    );
   }
 
   async delete<T>(
     endpoint: string,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
+    requireAuth: boolean = true
   ): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: "DELETE",
-      headers,
-    });
+    return this.request<T>(
+      endpoint,
+      {
+        method: "DELETE",
+        headers,
+      },
+      requireAuth
+    );
   }
 
-  // Método para setear token de autorización
+  // ← MODIFICADO: Ahora guarda el token separadamente
   setAuthToken(token: string) {
-    this.defaultHeaders["Authorization"] = `Bearer ${token}`;
+    this.authToken = token;
   }
 
-  // Método para remover token de autorización
+  // ← MODIFICADO: Limpia el token
   removeAuthToken() {
-    delete this.defaultHeaders["Authorization"];
+    this.authToken = null;
   }
 }
 

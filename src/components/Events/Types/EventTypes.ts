@@ -21,6 +21,36 @@ export interface EventFormData {
   tags: string[];
   imageUrls: string[];
   additionalDetails: string;
+} // Types/EventTypes.ts (asumiendo la estructura)
+export interface EventFormData {
+  eventTitle: string;
+  eventObjective: string;
+  eventLocation: string;
+  address: string;
+  startDate: string;
+  endDate: string;
+  registrationStart: string;
+  registrationEnd: string;
+  careerIds: string[];
+  targetTeachers: boolean;
+  targetStudents: boolean;
+  targetAdministrative: boolean;
+  targetGeneral: boolean;
+  isVirtual: boolean;
+  meetingUrl: string;
+  maxCapacity: string;
+  requiresRegistration: boolean;
+  isPublic: boolean;
+  tags: string[];
+  imageUrls: string[];
+  additionalDetails: string;
+}
+
+export interface EventFormProps {
+  isOpen: boolean;
+  onClose: () => void;
+  event?: any; // Puedes tipar esto más específicamente según tu Event interface
+  onEventCreated?: (event: any) => void; // ← NUEVO: Callback opcional para cuando se crea un evento
 }
 
 export interface EventFormProps {

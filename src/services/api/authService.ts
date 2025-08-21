@@ -45,10 +45,17 @@ export class AuthService {
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
+      console.log("Attempting login with:", { email: credentials.email });
+
+      // ← CORREGIDO: Login SIN autorización (requireAuth: false)
       const response = await apiClient.post<LoginResponse>(
         "/user/loginapp",
-        credentials
+        credentials,
+        undefined, // headers
+        false // requireAuth = false ← ESTO ES CLAVE
       );
+
+      console.log("Login response:", response);
 
       // Si el login es exitoso, guardar tokens y datos del usuario
       if (response.isSuccess && response.data) {
@@ -58,6 +65,7 @@ export class AuthService {
 
       return response;
     } catch (error) {
+      console.error("Login error:", error);
       throw error;
     }
   }
@@ -165,9 +173,12 @@ export class AuthService {
         return false;
       }
 
-      // Aquí podrías implementar la llamada al endpoint de refresh
-      // const response = await apiClient.post('/auth/refresh', { refreshToken });
-      // Por ahora retornamos false hasta que tengas el endpoint
+      // Cuando implementes el refresh, también sin auth inicial:
+      // const response = await apiClient.post('/auth/refresh',
+      //   { refreshToken },
+      //   undefined,
+      //   false  // requireAuth = false
+      // );
 
       return false;
     } catch {

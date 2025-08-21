@@ -54,7 +54,6 @@ export default function RegisterForm({
     success,
     response,
     clearError: clearRegistrationError,
-    reset,
   } = useStaffRegistration();
 
   // Limpiar error cuando el usuario empiece a escribir

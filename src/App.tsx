@@ -171,7 +171,7 @@ function App() {
       default:
         return (
           <Dashboard
-            onViewEventDetails={function (event: any): void {
+            onViewEventDetails={function (): void {
               throw new Error("Function not implemented.");
             }}
           />

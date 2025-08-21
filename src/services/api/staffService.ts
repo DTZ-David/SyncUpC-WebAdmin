@@ -1,6 +1,6 @@
 // src/services/api/staffService.ts
 
-import { apiClient, ApiResponse } from "./apiClient";
+import { apiClient } from "./apiClient";
 
 // Interfaces para el servicio
 export interface RegisterStaffRequest {
