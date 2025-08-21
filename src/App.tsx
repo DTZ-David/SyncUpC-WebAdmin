@@ -9,6 +9,7 @@ import EventForm from "./components/Events/EventForm";
 import AttendeeList from "./components/Attendees/AttendeeList";
 import EventDetails from "./components/Events/EventDetails";
 import StaffManagement from "./components/Staff/StaffManagement";
+import { authService } from "./services/api/authService";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -23,18 +24,24 @@ function App() {
   >(null);
   const [viewingEventDetails, setViewingEventDetails] = useState<any>(null);
 
-  const handleLogin = (email: string, password: string) => {
-    // In a real app, you would validate credentials with your backend
-    // For demo purposes, we'll accept any credentials
-    const userData = {
-      id: 1,
-      name: email === "admin@company.com" ? "Admin User" : "Staff Member",
-      email: email,
-      role: email === "admin@company.com" ? "admin" : "organizer",
-    };
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      const response = await authService.login({ email, password });
 
-    setCurrentUser(userData);
-    setIsAuthenticated(true);
+      if (response.isSuccess && response.data) {
+        // Obtiene el usuario guardado en localStorage
+        const user = authService.getCurrentUser();
+        if (user) {
+          setCurrentUser(user);
+          setIsAuthenticated(true);
+        }
+      } else {
+        alert(response.message || "Credenciales inválidas");
+      }
+    } catch (error) {
+      console.error("Error en login:", error);
+      alert("Error al iniciar sesión");
+    }
   };
 
   const handleRegister = (userData: any) => {

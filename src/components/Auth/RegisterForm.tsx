@@ -1,78 +1,190 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, Phone, Calendar } from 'lucide-react';
+// src/components/Auth/RegisterForm.tsx
 
-interface RegisterFormProps {
-  onRegister: (userData: any) => void;
-  onSwitchToLogin: () => void;
-}
+import React, { useState, useEffect } from "react";
+import { Users, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  RegisterFormProps,
+  StaffFormData,
+  NotificationPreferences,
+} from "./types";
+import { useFormValidation } from "./hooks/useFormValidation";
+import { useFaculties } from "./hooks/useFaculties";
+import { useStaffRegistration } from "./hooks/useStaffRegistration";
+import PersonalDataStep from "./PersonalDataStep";
+import ProfessionalDataStep from "./ProfessionalDataStep";
+import ConfigurationStep from "./ConfigurationStep";
+import StepIndicator from "./StepIndicator";
 
-export default function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-    role: 'organizer'
-  });
+export default function RegisterForm({
+  onRegister,
+  onSwitchToLogin,
+}: RegisterFormProps) {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<any>({});
 
-  const validateForm = () => {
-    const newErrors: any = {};
+  const [formData, setFormData] = useState<StaffFormData>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phoneNumber: "",
+    profilePhotoUrl: "",
+    profession: "",
+    department: "",
+    position: "",
+    facultyId: "",
+    notificationPreferences: {
+      eventReminder: { push: true, email: true, whatsApp: false },
+      eventUpdate: { push: true, email: true, whatsApp: false },
+      forumReply: { push: false, email: true, whatsApp: false },
+      forumMention: { push: true, email: true, whatsApp: false },
+    },
+  });
 
-    if (formData.password.length < 6) {
-      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+  const { errors, validateStep, clearError } = useFormValidation();
+  const { faculties, loading: loadingFaculties } = useFaculties();
+  const {
+    registerStaff,
+    isLoading,
+    error: registrationError,
+    success,
+    response,
+    clearError: clearRegistrationError,
+    reset,
+  } = useStaffRegistration();
+
+  // Limpiar error cuando el usuario empiece a escribir
+  useEffect(() => {
+    if (registrationError) {
+      clearRegistrationError();
     }
+  }, [formData]);
 
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Las contraseñas no coinciden';
-    }
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'El nombre completo es requerido';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'El correo electrónico es requerido';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      onRegister(formData);
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
-    
-    // Clear error when user starts typing
-    if (errors[e.target.name]) {
-      setErrors({
-        ...errors,
-        [e.target.name]: ''
-      });
+    clearError(e.target.name);
+  };
+
+  const handlePreferencesChange = (preferences: NotificationPreferences) => {
+    setFormData({ ...formData, notificationPreferences: preferences });
+  };
+
+  const handleNext = () => {
+    if (validateStep(currentStep, formData)) {
+      if (!completedSteps.includes(currentStep)) {
+        setCompletedSteps([...completedSteps, currentStep]);
+      }
+      setCurrentStep(currentStep + 1);
     }
   };
+
+  const handlePrev = () => {
+    setCurrentStep(currentStep - 1);
+  };
+
+  const handleSubmit = async () => {
+    if (!validateStep(3, formData)) return;
+
+    try {
+      let profilePhotoUrl = "";
+      if (selectedFile) {
+        // Aquí podrías implementar la subida de imagen
+        // Por ahora usamos una URL placeholder
+        profilePhotoUrl = "https://via.placeholder.com/150";
+      }
+
+      // Preparar datos para enviar al backend (sin confirmPassword)
+      const { confirmPassword, ...submitData } = formData;
+      const staffData = {
+        ...submitData,
+        profilePhotoUrl,
+      };
+
+      // Llamar al servicio de registro
+      await registerStaff(staffData);
+
+      // Si el registro es exitoso, llamar a onRegister
+      if (success && response) {
+        onRegister(staffData);
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <PersonalDataStep
+            formData={formData}
+            errors={errors}
+            showPassword={showPassword}
+            showConfirmPassword={showConfirmPassword}
+            selectedFile={selectedFile}
+            onInputChange={handleInputChange}
+            onFileSelect={setSelectedFile}
+            onTogglePassword={() => setShowPassword(!showPassword)}
+            onToggleConfirmPassword={() =>
+              setShowConfirmPassword(!showConfirmPassword)
+            }
+          />
+        );
+      case 2:
+        return (
+          <ProfessionalDataStep
+            formData={formData}
+            errors={errors}
+            faculties={faculties}
+            loadingFaculties={loadingFaculties}
+            onInputChange={handleInputChange}
+          />
+        );
+      case 3:
+        return (
+          <ConfigurationStep
+            formData={formData}
+            faculties={faculties}
+            onPreferencesChange={handlePreferencesChange}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Mostrar mensaje de éxito
+  if (success && response) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md w-full">
+          <CheckCircle className="mx-auto mb-4 text-green-500" size={64} />
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            ¡Registro Exitoso!
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Bienvenido/a {response.firstName} {response.lastName}. Tu cuenta ha
+            sido creada exitosamente.
+          </p>
+          <button
+            onClick={onSwitchToLogin}
+            className="w-full px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          >
+            Ir al Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -81,16 +193,16 @@ export default function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFo
         <div className="absolute inset-0 bg-black bg-opacity-20"></div>
         <img
           src="https://images.pexels.com/photos/2774556/pexels-photo-2774556.jpeg?auto=compress&cs=tinysrgb&w=800"
-          alt="Event Registration"
+          alt="Staff Registration"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white p-8">
             <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl p-8">
-              <Calendar className="mx-auto mb-4" size={64} />
-              <h1 className="text-4xl font-bold mb-4">Únete al Equipo</h1>
+              <Users className="mx-auto mb-4" size={64} />
+              <h1 className="text-4xl font-bold mb-4">Únete al Staff</h1>
               <p className="text-xl opacity-90">
-                Crea tu cuenta y comienza a gestionar eventos increíbles
+                Forma parte del equipo académico y administrativo
               </p>
             </div>
           </div>
@@ -99,174 +211,83 @@ export default function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFo
 
       {/* Right Side - Register Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-2xl">
           {/* Mobile Header */}
           <div className="lg:hidden text-center mb-8">
             <div className="bg-lime-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Calendar className="text-white" size={32} />
+              <Users className="text-white" size={32} />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Event Admin</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Staff Portal
+            </h1>
           </div>
 
           {/* Register Form */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Crear Cuenta</h2>
-              <p className="text-gray-600">Únete como miembro del equipo administrativo</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Registro de Staff
+              </h2>
+              <p className="text-gray-600">Paso {currentStep} de 3</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Full Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre Completo *
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent transition-colors ${
-                      errors.name ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Ingresa tu nombre completo"
-                  />
-                </div>
-                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Correo Electrónico *
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type="email"
-                    name="email"
-                    required
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent transition-colors ${
-                      errors.email ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Ingresa tu correo"
-                  />
-                </div>
-                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Número de Teléfono
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent transition-colors"
-                    placeholder="Ingresa tu número de teléfono"
-                  />
+            {/* Error Message */}
+            {registrationError && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center">
+                <AlertCircle className="text-red-500 mr-3" size={20} />
+                <div className="text-red-700">
+                  <p className="font-medium">Error en el registro</p>
+                  <p className="text-sm">{registrationError}</p>
                 </div>
               </div>
+            )}
 
-              {/* Role */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Rol
-                </label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent transition-colors"
-                >
-                  <option value="organizer">Organizador de Eventos</option>
-                  <option value="moderator">Moderador de Eventos</option>
-                  <option value="admin">Administrador</option>
-                </select>
-              </div>
+            <StepIndicator
+              currentStep={currentStep}
+              completedSteps={completedSteps}
+            />
 
-              {/* Password */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Contraseña *
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    required
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent transition-colors ${
-                      errors.password ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Crea una contraseña"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-              </div>
+            {renderStep()}
 
-              {/* Confirm Password */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirmar Contraseña *
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    name="confirmPassword"
-                    required
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent transition-colors ${
-                      errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Confirma tu contraseña"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
-              </div>
-
-              {/* Submit Button */}
+            {/* Navigation Buttons */}
+            <div className="flex justify-between mt-8">
               <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handlePrev}
+                disabled={currentStep === 1}
+                className="flex items-center px-6 py-3 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Creando Cuenta...' : 'Crear Cuenta'}
+                ← Anterior
               </button>
-            </form>
+
+              {currentStep < 3 ? (
+                <button
+                  onClick={handleNext}
+                  className="flex items-center px-6 py-3 bg-lime-500 text-white rounded-lg hover:bg-lime-600 transition-colors"
+                >
+                  Siguiente →
+                </button>
+              ) : (
+                <button
+                  onClick={handleSubmit}
+                  disabled={isLoading || loadingFaculties}
+                  className="flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Creando Cuenta...
+                    </div>
+                  ) : (
+                    "Crear Cuenta"
+                  )}
+                </button>
+              )}
+            </div>
 
             {/* Login Link */}
             <div className="mt-6 text-center">
               <p className="text-gray-600">
-                ¿Ya tienes una cuenta?{' '}
+                ¿Ya tienes una cuenta?{" "}
                 <button
                   onClick={onSwitchToLogin}
                   className="text-green-600 hover:text-green-700 font-medium transition-colors"
