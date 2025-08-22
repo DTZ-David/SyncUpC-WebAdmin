@@ -211,17 +211,8 @@ class EventService {
   // ← NUEVO: Método para eliminar evento
   async deleteEvent(eventId: string): Promise<DeleteEventResponse> {
     try {
-      console.log(
-        "🔥 [DELETE EVENT] Iniciando eliminación de evento:",
-        eventId
-      );
-
       // Asegurar que el token esté configurado
       const user = authService.getCurrentUser();
-      console.log(
-        "🔑 [DELETE EVENT] Usuario actual:",
-        user ? "Encontrado" : "No encontrado"
-      );
 
       if (!user?.token) {
         console.error(
@@ -230,18 +221,11 @@ class EventService {
         throw new Error("No hay token de autenticación disponible");
       }
 
-      console.log(
-        "🔑 [DELETE EVENT] Token encontrado, configurando apiClient..."
-      );
       apiClient.setAuthToken(user.token);
 
       const deleteData: DeleteEventRequest = {
         id: eventId,
       };
-
-      console.log("📦 [DELETE EVENT] Datos a enviar:", deleteData);
-      console.log("🌐 [DELETE EVENT] Endpoint:", this.endpoints.DELETE_EVENT);
-      console.log("🔄 [DELETE EVENT] Enviando petición de eliminación...");
 
       const response = await apiClient.delete<DeleteEventResponse>(
         this.endpoints.DELETE_EVENT,
@@ -249,13 +233,6 @@ class EventService {
         undefined, // headers
         true // requireAuth = true (necesita autenticación)
       );
-
-      console.log("✅ [DELETE EVENT] Respuesta del servidor:");
-      console.log("📊 Status Code:", response.statusCode);
-      console.log("✅ Is Success:", response.isSuccess);
-      console.log("💬 Message:", response.message);
-      console.log("📄 Data:", response.data);
-      console.log("🚨 Errors:", response.errors);
 
       if (response.isSuccess) {
         console.log(

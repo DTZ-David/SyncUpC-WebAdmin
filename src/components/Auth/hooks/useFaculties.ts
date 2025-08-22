@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Faculty } from "../types";
-import { facultyService } from "../../../services/facultyService";
+import { facultyService } from "../../../services/api/facultyService";
 
 export const useFaculties = () => {
   const [faculties, setFaculties] = useState<Faculty[]>([]);
@@ -24,7 +24,6 @@ export const useFaculties = () => {
           : "Error desconocido al cargar facultades";
       setError(errorMessage);
 
-      // Fallback a datos mock en caso de error (opcional)
       const mockFaculties: Faculty[] = [
         { id: "1", name: "Facultad de Ingeniería" },
         { id: "2", name: "Facultad de Medicina" },

@@ -75,32 +75,28 @@ export default function Dashboard({ onViewEventDetails }: DashboardProps) {
       title: "Total de Eventos",
       value: stats.totalEvents,
       icon: Calendar,
-      change: "12% desde el mes pasado",
-      changeType: "increase" as const,
+
       color: "bg-green-500",
     },
     {
       title: "Total de Asistentes",
       value: stats.totalAttendees,
       icon: Users,
-      change: "18% desde el mes pasado",
-      changeType: "increase" as const,
+
       color: "bg-blue-500",
     },
     {
       title: "Asistentes Confirmados",
       value: stats.confirmedAttendees,
       icon: UserCheck,
-      change: "5% desde el mes pasado",
-      changeType: "increase" as const,
+
       color: "bg-lime-500",
     },
     {
       title: "Tasa de Asistencia",
       value: stats.attendanceRate,
       icon: TrendingUp,
-      change: "3% desde el mes pasado",
-      changeType: "increase" as const,
+
       color: "bg-purple-500",
     },
   ];

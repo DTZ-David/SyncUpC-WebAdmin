@@ -1,5 +1,9 @@
 // types/eventTypes.ts
 export interface EventFormData {
+  startTime: any;
+  endTime: any;
+  registrationStartTime: any;
+  registrationEndTime: any;
   eventTitle: string;
   eventObjective: string;
   eventLocation: string;
@@ -58,6 +62,9 @@ export interface EventFormProps {
   onClose: () => void;
   event?: any;
 }
+type FormChangeEvent = React.ChangeEvent<
+  HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+>;
 
 export interface BasicInfoProps {
   formData: EventFormData;
@@ -75,7 +82,7 @@ export interface LocationInfoProps {
 
 export interface DateTimeInfoProps {
   formData: EventFormData;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: FormChangeEvent) => void;
 }
 
 export interface TargetAudienceProps {

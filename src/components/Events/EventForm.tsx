@@ -1,41 +1,22 @@
 // components/Events/EventForm.tsx
-import React, { useState, useEffect } from "react";
-import { X } from "lucide-react";
-import { EventFormData, EventFormProps } from "./Types/EventTypes";
+import React, { useState } from "react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { EventFormProps } from "./Types/EventTypes";
+
+// Componentes de secciones
 import { BasicInfoSection } from "./Sections/BasicInfoSection";
 import { LocationInfoSection } from "./Sections/LocationInfoSection";
 import { DateTimeInfoSection } from "./Sections/DateTimeInfoSection";
 import { TargetAudienceSection } from "./Sections/TargetAudienceSection";
 import { VirtualEventSection } from "./Sections/VirtualEventSection";
 import { EventSettingsSection } from "./Sections/EventSettingsSection";
+import { RegistrationTimeSection } from "./Sections/RegistrationTimeSection";
+import { CareerSelectionSection } from "./Sections/CareerSelectionSection";
 import { TagsInput } from "./Sections/TagsInput";
 import { ImageUpload } from "./Sections/ImageUpload";
-import { eventService } from "../../services/api/eventService";
-import { supabaseService } from "../../services/config/supabaseService";
-
-const initialFormData: EventFormData = {
-  eventTitle: "",
-  eventObjective: "",
-  eventLocation: "",
-  address: "",
-  startDate: "",
-  endDate: "",
-  registrationStart: "",
-  registrationEnd: "",
-  careerIds: [],
-  targetTeachers: false,
-  targetStudents: false,
-  targetAdministrative: false,
-  targetGeneral: false,
-  isVirtual: false,
-  meetingUrl: "",
-  maxCapacity: "",
-  requiresRegistration: true,
-  isPublic: true,
-  tags: [],
-  imageUrls: [],
-  additionalDetails: "",
-};
+import { useEventForm } from "./hooks/useEventForm";
+import { useEventSubmission } from "./hooks/useEventSubmission";
+import { ErrorDisplay } from "./utils/ErrorDisplay";
 
 export default function EventForm({
   isOpen,
@@ -43,362 +24,444 @@ export default function EventForm({
   event,
   onEventCreated,
 }: EventFormProps) {
-  const [formData, setFormData] = useState<EventFormData>({
-    ...initialFormData,
-  });
-  const [currentImage, setCurrentImage] = useState<string>("");
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
-  const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [submitError, setSubmitError] = useState<string>("");
-  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
-  useEffect(() => {
-    if (event) {
-      // Modo edición: mapear datos del backend al formulario
-      console.log("Evento recibido para editar:", event);
-
-      const mappedData = eventService.mapBackendEventToFormData(event);
-      console.log("Datos mapeados para el formulario:", mappedData);
-
-      setFormData(mappedData);
-      setCurrentImage(event.imageUrls?.[0] || event.image || "");
-      setIsEditMode(true);
-    } else {
-      // Modo creación: resetear formulario
-      setFormData(initialFormData);
-      setCurrentImage("");
-      setIsEditMode(false);
-      setSelectedImageFile(null);
+  // Reset currentStep to 0 when opening the modal for editing
+  React.useEffect(() => {
+    if (isOpen) {
+      setCurrentStep(0); // Siempre empezar en el paso 1 (índice 0)
     }
+  }, [isOpen, event]);
 
-    // Limpiar estados de error y carga cuando se abre/cierra
-    setSubmitError("");
-    setIsSubmitting(false);
-  }, [event, isOpen]);
+  // Definición de los pasos
+  const steps = [
+    {
+      id: "basic",
+      title: "Información Básica",
+      icon: "📝",
+      description: "Título, objetivo y detalles principales del evento",
+    },
+    {
+      id: "datetime",
+      title: "Fecha y Ubicación",
+      icon: "📅",
+      description: "Cuándo y dónde se realizará el evento",
+    },
+    {
+      id: "audience",
+      title: "Audiencia y Configuración",
+      icon: "👥",
+      description: "A quién está dirigido y configuraciones especiales",
+    },
+    {
+      id: "details",
+      title: "Detalles Finales",
+      icon: "✨",
+      description: "Información adicional, etiquetas e imagen",
+    },
+  ];
+
+  // Hook para manejo del estado del formulario
+  const {
+    formData,
+    currentImage,
+    selectedImageFile,
+    isSubmitting,
+    setIsSubmitting,
+    submitError,
+    setSubmitError,
+    isEditMode,
+    handleInputChange,
+    handleAddTag,
+    handleRemoveTag,
+    handleImageUpload,
+    handleCareerChange,
+  } = useEventForm(event, isOpen);
+
+  // Hook para manejo del envío del formulario
+  const { submitEvent, isUploadingImage } = useEventSubmission();
 
   if (!isOpen) return null;
-
-  const validateForm = (): string[] => {
-    const errors: string[] = [];
-
-    if (!formData.eventTitle.trim()) {
-      errors.push("El título del evento es obligatorio");
-    }
-
-    if (!formData.eventObjective.trim()) {
-      errors.push("El objetivo del evento es obligatorio");
-    }
-
-    if (!formData.startDate) {
-      errors.push("La fecha de inicio es obligatoria");
-    }
-
-    if (formData.startDate && formData.endDate) {
-      const startDate = new Date(formData.startDate);
-      const endDate = new Date(formData.endDate);
-
-      if (startDate >= endDate) {
-        errors.push("La fecha de fin debe ser posterior a la fecha de inicio");
-      }
-    }
-
-    if (formData.requiresRegistration) {
-      if (!formData.registrationStart) {
-        errors.push("La fecha de inicio de registro es obligatoria");
-      }
-      if (!formData.registrationEnd) {
-        errors.push("La fecha de fin de registro es obligatoria");
-      }
-    }
-
-    if (
-      !formData.targetTeachers &&
-      !formData.targetStudents &&
-      !formData.targetAdministrative &&
-      !formData.targetGeneral
-    ) {
-      errors.push("Debe seleccionar al menos una audiencia objetivo");
-    }
-
-    if (formData.isVirtual && !formData.meetingUrl.trim()) {
-      errors.push("La URL de reunión es obligatoria para eventos virtuales");
-    }
-
-    return errors;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log("🚀 [EVENT FORM] Iniciando envío del formulario");
+    console.log("🚀 [EVENT FORM] Datos del formulario:", formData);
+    console.log("🚀 [EVENT FORM] Modo edición:", isEditMode);
+    console.log(
+      "🚀 [EVENT FORM] Imagen seleccionada:",
+      selectedImageFile?.name
+    );
+
     setSubmitError("");
-    const validationErrors = validateForm();
-
-    if (validationErrors.length > 0) {
-      setSubmitError(validationErrors.join(", "));
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      let imageUrl = currentImage;
+      const result = await submitEvent(
+        formData,
+        selectedImageFile,
+        currentImage,
+        isEditMode
+      );
 
-      // Si hay una imagen nueva, subirla a Supabase
-      if (selectedImageFile) {
-        setIsUploadingImage(true);
-        const uploadResult = await supabaseService.uploadImage(
-          selectedImageFile,
-          "events"
-        );
+      console.log("📡 [EVENT FORM] Respuesta del backend:", result);
 
-        if (uploadResult.success && uploadResult.url) {
-          imageUrl = uploadResult.url;
-          console.log("Imagen subida a Supabase:", imageUrl);
-        } else {
-          throw new Error(uploadResult.error || "Error al subir la imagen");
+      if (result.success) {
+        console.log("✅ [EVENT FORM] Evento creado/actualizado exitosamente");
+        if (onEventCreated && result.data) {
+          onEventCreated(result.data);
         }
-      }
-
-      // Preparar datos finales con la URL de la imagen
-      const finalFormData = {
-        ...formData,
-        imageUrls: imageUrl ? [imageUrl] : [],
-      };
-
-      let response;
-
-      if (isEditMode) {
-        // Actualizar evento existente
-        console.log("Actualizando evento con datos:", finalFormData);
-        const apiData =
-          eventService.transformFormDataToUpdateRequest(finalFormData);
-        console.log("Datos transformados para API de actualización:", apiData);
-        response = await eventService.updateEvent(apiData);
-      } else {
-        // Crear nuevo evento
-        console.log("Creando nuevo evento con datos:", finalFormData);
-        const apiData =
-          eventService.transformFormDataToApiRequest(finalFormData);
-        console.log("Datos transformados para API de creación:", apiData);
-        response = await eventService.createEvent(apiData);
-      }
-
-      if (response.isSuccess) {
-        console.log(
-          `Evento ${isEditMode ? "actualizado" : "creado"} exitosamente:`,
-          response
-        );
-
-        // Callback para notificar al componente padre
-        if (onEventCreated && response.data) {
-          onEventCreated(response.data);
-        }
-
         onClose();
-
-        // Mostrar mensaje de éxito
         alert(`Evento ${isEditMode ? "actualizado" : "creado"} exitosamente`);
       } else {
-        throw new Error(
-          response.message ||
-            `Error al ${isEditMode ? "actualizar" : "crear"} el evento`
+        console.error("❌ [EVENT FORM] Error en submitEvent:", result.error);
+        setSubmitError(
+          result.error || "Error desconocido al procesar el evento"
         );
       }
-    } catch (error: any) {
-      console.error(
-        `Error ${isEditMode ? "updating" : "creating"} event:`,
-        error
-      );
-      setSubmitError(
-        error.message ||
-          `Ocurrió un error al ${
-            isEditMode ? "actualizar" : "crear"
-          } el evento. Por favor intenta nuevamente.`
-      );
+    } catch (error) {
+      console.error("💥 [EVENT FORM] Error capturado:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Error desconocido";
+      setSubmitError(`Error al procesar la solicitud: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
-      setIsUploadingImage(false);
     }
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value, type } = e.target;
-
-    if (type === "checkbox") {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData((prev) => ({ ...prev, [name]: checked }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+  const nextStep = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
     }
   };
 
-  const handleAddTag = (tag: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: [...prev.tags, tag],
-    }));
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
   };
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((tag: string) => tag !== tagToRemove),
-    }));
+  const goToStep = (stepIndex: number) => {
+    setCurrentStep(stepIndex);
   };
 
-  const handleImageUpload = (files: FileList | null) => {
-    if (files && files.length > 0) {
-      const file = files[0];
+  // Función para validar si se puede avanzar al siguiente paso
+  const canProceedToNext = () => {
+    switch (currentStep) {
+      case 0: // Información Básica
+        return (
+          formData.eventTitle.trim() !== "" &&
+          formData.eventObjective.trim() !== ""
+        );
+      case 1: // Fecha y Ubicación
+        return formData.startDate !== "" && formData.startTime !== "";
+      case 2: // Audiencia
+        return (
+          formData.targetTeachers ||
+          formData.targetStudents ||
+          formData.targetAdministrative ||
+          formData.targetGeneral
+        );
+      default:
+        return true;
+    }
+  };
 
-      // Validar tipo de archivo
-      if (!file.type.startsWith("image/")) {
-        setSubmitError("Por favor selecciona un archivo de imagen válido");
-        return;
-      }
+  // Función para prevenir submit accidental
+  const handleFormKeyDown = (e: React.KeyboardEvent) => {
+    // Prevenir submit con Enter excepto en textareas
+    if (
+      e.key === "Enter" &&
+      e.target &&
+      (e.target as HTMLElement).tagName !== "TEXTAREA"
+    ) {
+      e.preventDefault();
+    }
+  };
 
-      // Validar tamaño (máximo 5MB)
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        setSubmitError("La imagen debe ser menor a 5MB");
-        return;
-      }
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <div className="space-y-8">
+            <BasicInfoSection
+              formData={formData}
+              onChange={handleInputChange}
+            />
 
-      setSelectedImageFile(file);
+            {/* Detalles Adicionales en el primer paso */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Detalles Adicionales
+              </label>
+              <textarea
+                name="additionalDetails"
+                rows={4}
+                value={formData.additionalDetails}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent resize-none"
+                placeholder="Información adicional sobre el evento"
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+        );
 
-      // Mostrar preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setCurrentImage(e.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+      case 1:
+        return (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <DateTimeInfoSection
+                formData={formData}
+                onChange={handleInputChange}
+                showRegistrationDates={formData.requiresRegistration}
+              />
 
-      // Limpiar error si había uno
-      setSubmitError("");
+              <div className="space-y-6">
+                <LocationInfoSection
+                  formData={formData}
+                  onChange={handleInputChange}
+                />
+
+                <VirtualEventSection
+                  formData={formData}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <TargetAudienceSection
+                  formData={formData}
+                  onChange={handleInputChange}
+                />
+
+                <EventSettingsSection
+                  formData={formData}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="space-y-6">
+                <CareerSelectionSection
+                  formData={formData}
+                  onChange={handleCareerChange}
+                  disabled={isSubmitting}
+                />
+
+                {formData.requiresRegistration && (
+                  <RegistrationTimeSection
+                    formData={formData}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-8" onKeyDown={(e) => e.stopPropagation()}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <TagsInput
+                  tags={formData.tags}
+                  onAddTag={handleAddTag}
+                  onRemoveTag={handleRemoveTag}
+                />
+              </div>
+
+              <div onClick={(e) => e.stopPropagation()}>
+                <ImageUpload
+                  onImageUpload={handleImageUpload}
+                  currentImage={currentImage}
+                  isEditing={isEditMode}
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-4xl max-h-screen overflow-y-auto">
+      <div className="bg-white rounded-lg w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {isEditMode ? "Editar Evento" : "Crear Nuevo Evento"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-            disabled={isSubmitting}
-          >
-            <X size={24} />
-          </button>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Mostrar error de validación/API */}
-          {submitError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              <p className="text-sm">{submitError}</p>
-            </div>
-          )}
-
-          {/* Basic Information */}
-          <BasicInfoSection formData={formData} onChange={handleInputChange} />
-
-          {/* Location Information */}
-          <LocationInfoSection
-            formData={formData}
-            onChange={handleInputChange}
-          />
-
-          {/* Date and Time Information */}
-          <DateTimeInfoSection
-            formData={formData}
-            onChange={handleInputChange}
-            showRegistrationDates={formData.requiresRegistration}
-          />
-
-          {/* Target Audience */}
-          <TargetAudienceSection
-            formData={formData}
-            onChange={handleInputChange}
-          />
-
-          {/* Virtual Event Settings */}
-          <VirtualEventSection
-            formData={formData}
-            onChange={handleInputChange}
-          />
-
-          {/* Event Settings */}
-          <EventSettingsSection
-            formData={formData}
-            onChange={handleInputChange}
-          />
-
-          {/* Tags */}
-          <TagsInput
-            tags={formData.tags}
-            onAddTag={handleAddTag}
-            onRemoveTag={handleRemoveTag}
-          />
-
-          {/* Additional Details */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Detalles Adicionales
-            </label>
-            <textarea
-              name="additionalDetails"
-              rows={4}
-              value={formData.additionalDetails}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-              placeholder="Información adicional sobre el evento"
+        <header className="px-8 py-6 border-b bg-white">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-gray-900">
+              {isEditMode ? "Editar Evento" : "Crear Nuevo Evento"}
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
               disabled={isSubmitting}
-            />
+            >
+              <X size={24} />
+            </button>
           </div>
 
-          {/* Event Image */}
-          <ImageUpload
-            onImageUpload={handleImageUpload}
-            currentImage={currentImage}
-            isEditing={isEditMode}
-          />
+          {/* Progress Bar */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700">
+                Paso {currentStep + 1} de {steps.length}
+              </span>
+              <span className="text-sm text-gray-500">
+                {Math.round(((currentStep + 1) / steps.length) * 100)}%
+                completado
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-lime-500 h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${((currentStep + 1) / steps.length) * 100}%`,
+                }}
+              ></div>
+            </div>
+          </div>
 
-          {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+          {/* Step Navigation */}
+          <nav className="flex space-x-4 overflow-x-auto">
+            {steps.map((step, index) => (
+              <button
+                key={step.id}
+                onClick={() => goToStep(index)}
+                disabled={isSubmitting}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all whitespace-nowrap ${
+                  currentStep === index
+                    ? "bg-lime-100 text-lime-700 font-medium shadow-sm"
+                    : index < currentStep
+                    ? "bg-green-50 text-green-600 hover:bg-green-100"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <span className="text-lg">{step.icon}</span>
+                <span className="hidden sm:inline">{step.title}</span>
+                {index < currentStep && (
+                  <span className="text-green-500">✓</span>
+                )}
+              </button>
+            ))}
+          </nav>
+
+          {/* Current Step Description */}
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+            <h3 className="font-medium text-gray-900 mb-1">
+              {steps[currentStep].title}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {steps[currentStep].description}
+            </p>
+          </div>
+        </header>
+
+        {/* Form Content - SOLUCIÓN: Todo el form envuelve el contenido Y los botones */}
+        <form
+          onSubmit={handleSubmit}
+          onKeyDown={handleFormKeyDown}
+          className="flex-1 flex flex-col"
+        >
+          <div className="flex-1 overflow-y-auto">
+            <div className="px-8 py-6">
+              {/* Error Display */}
+              <ErrorDisplay
+                error={submitError}
+                onDismiss={() => setSubmitError("")}
+              />
+
+              {/* Step Content */}
+              <div className="min-h-[400px]">{renderStepContent()}</div>
+            </div>
+          </div>
+
+          {/* Footer with Navigation - AHORA DENTRO DEL FORM */}
+          <div className="px-8 py-6 bg-gray-50 border-t flex items-center justify-between">
             <button
               type="button"
-              onClick={onClose}
-              className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              disabled={isSubmitting}
+              onClick={prevStep}
+              disabled={currentStep === 0 || isSubmitting}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                currentStep === 0 || isSubmitting
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
+              }`}
             >
-              Cancelar
+              <ChevronLeft size={18} />
+              <span>Anterior</span>
             </button>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={isSubmitting || isUploadingImage}
-            >
-              {isUploadingImage
-                ? "Subiendo imagen..."
-                : isSubmitting
-                ? isEditMode
-                  ? "Actualizando..."
-                  : "Creando..."
-                : isEditMode
-                ? "Actualizar Evento"
-                : "Crear Evento"}
-            </button>
+
+            <div className="flex space-x-3">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+
+              {currentStep === steps.length - 1 ? (
+                <button
+                  type="submit"
+                  disabled={isSubmitting || isUploadingImage}
+                  className="px-6 py-2 bg-lime-500 text-white rounded-lg hover:bg-lime-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                  onClick={(e) => {
+                    console.log(
+                      "🎯 [SUBMIT BUTTON] Botón submit clickeado explícitamente"
+                    );
+                  }}
+                >
+                  {isSubmitting || isUploadingImage ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>
+                        {isUploadingImage
+                          ? "Subiendo imagen..."
+                          : isEditMode
+                          ? "Actualizando..."
+                          : "Creando..."}
+                      </span>
+                    </>
+                  ) : (
+                    <span>
+                      {isEditMode ? "Actualizar Evento" : "Crear Evento"}
+                    </span>
+                  )}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    nextStep();
+                  }}
+                  disabled={!canProceedToNext() || isSubmitting}
+                  className={`flex items-center space-x-2 px-6 py-2 rounded-lg transition-colors ${
+                    canProceedToNext() && !isSubmitting
+                      ? "bg-lime-500 text-white hover:bg-lime-600"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+                >
+                  <span>Siguiente</span>
+                  <ChevronRight size={18} />
+                </button>
+              )}
+            </div>
           </div>
         </form>
       </div>

@@ -6,25 +6,11 @@ interface HeaderProps {
 }
 
 export default function Header({ user, onLogout }: HeaderProps) {
-  // 🔍 DEBUG: Console log para ver qué datos llegan
-  console.log("🔍 Header - User data:", user);
-  console.log("🔍 Header - User type:", typeof user);
-  console.log("🔍 Header - User keys:", user ? Object.keys(user) : "No user");
-
   // Extraer datos del usuario de forma segura
   const userName = user?.name || "Usuario";
   const userRole = user?.role || "staff";
   const userEmail = user?.email || "";
   const profilePicture = user?.profilePicture || user?.profilePhotoUrl;
-
-  // 🔍 DEBUG: Console log de datos procesados
-  console.log("🔍 Header - Processed data:", {
-    userName,
-    userRole,
-    userEmail,
-    profilePicture,
-    hasProfilePicture: !!profilePicture,
-  });
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 lg:px-8 py-4">
@@ -56,9 +42,6 @@ export default function Header({ user, onLogout }: HeaderProps) {
                     alt={userName}
                     className="w-8 h-8 rounded-full object-cover border-2 border-green-200"
                     onError={() => {
-                      console.log(
-                        "🔍 Header - Image load error, using fallback"
-                      );
                       // Si la imagen falla, mostrar el fallback
                     }}
                   />
@@ -93,7 +76,6 @@ export default function Header({ user, onLogout }: HeaderProps) {
             {/* Logout Button */}
             <button
               onClick={() => {
-                console.log("🔍 Header - Logout clicked");
                 onLogout();
               }}
               className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors group relative"

@@ -1,98 +1,154 @@
 import { useState } from "react";
-import { Search, Download, Mail, Phone, ArrowLeft, Filter } from "lucide-react";
+import {
+  Search,
+  Download,
+  Calendar,
+  MapPin,
+  Users,
+  ArrowLeft,
+  Filter,
+  FileSpreadsheet,
+  FileText,
+  Mail,
+} from "lucide-react";
 
-interface Attendee {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  registrationDate: string;
-  status: "confirmed" | "pending" | "cancelled";
-  avatar: string;
+interface CompletedEvent {
+  id: string;
+  eventTitle: string;
+  eventDate: string;
+  eventLocation: string;
+  totalRegistered: number;
+  totalAttended: number;
+  attendanceRate: number;
+  imageUrl?: string;
+  tags: string[];
 }
 
-interface AttendeeListProps {
-  eventId?: number;
+interface CompletedEventsListProps {
   onBack?: () => void;
 }
 
-export default function AttendeeList({ eventId, onBack }: AttendeeListProps) {
+export default function CompletedEventsList({
+  onBack,
+}: CompletedEventsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("date");
 
-  const attendees: Attendee[] = [
+  // Datos de ejemplo - estos vendrán del backend
+  const completedEvents: CompletedEvent[] = [
     {
-      id: 1,
-      name: "Maria Gonzales",
-      email: "maria@example.com",
-      phone: "+1 (555) 123-4567",
-      registrationDate: "2024-12-15",
-      status: "confirmed",
-      avatar:
-        "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100",
+      id: "1",
+      eventTitle:
+        "Congreso Internacional de Innovación y Tecnología Educativa 2024",
+      eventDate: "2024-11-15T09:00:00",
+      eventLocation: "Universidad Nacional, Valledupar",
+      totalRegistered: 150,
+      totalAttended: 132,
+      attendanceRate: 88,
+      imageUrl:
+        "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=200&fit=crop",
+      tags: ["Tecnología", "Educación", "Innovación"],
     },
     {
-      id: 2,
-      name: "Carlos Rodriguez",
-      email: "carlos@example.com",
-      phone: "+1 (555) 234-5678",
-      registrationDate: "2024-12-14",
-      status: "confirmed",
-      avatar:
-        "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100",
+      id: "2",
+      eventTitle: "Seminario de Investigación en Ciencias Aplicadas",
+      eventDate: "2024-10-22T14:00:00",
+      eventLocation: "Centro de Convenciones, Valledupar",
+      totalRegistered: 89,
+      totalAttended: 76,
+      attendanceRate: 85,
+      imageUrl:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=200&fit=crop",
+      tags: ["Ciencia", "Investigación"],
     },
     {
-      id: 3,
-      name: "Ana Martinez",
-      email: "ana@example.com",
-      phone: "+1 (555) 345-6789",
-      registrationDate: "2024-12-13",
-      status: "pending",
-      avatar:
-        "https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&w=100",
-    },
-    {
-      id: 4,
-      name: "Luis Santos",
-      email: "luis@example.com",
-      phone: "+1 (555) 456-7890",
-      registrationDate: "2024-12-12",
-      status: "confirmed",
-      avatar:
-        "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100",
+      id: "3",
+      eventTitle: "Workshop de Desarrollo Sostenible",
+      eventDate: "2024-09-10T10:00:00",
+      eventLocation: "Auditorio Principal UNICESAR",
+      totalRegistered: 65,
+      totalAttended: 58,
+      attendanceRate: 89,
+      imageUrl:
+        "https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=400&h=200&fit=crop",
+      tags: ["Sostenibilidad", "Medio Ambiente"],
     },
   ];
 
-  const filteredAttendees = attendees.filter((attendee) => {
+  const filteredEvents = completedEvents.filter((event) => {
     const matchesSearch =
-      attendee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      attendee.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || attendee.status === statusFilter;
-    return matchesSearch && matchesStatus;
+      event.eventTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.eventLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.tags.some((tag) =>
+        tag.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    return matchesSearch;
   });
 
-  const handleExportToExcel = () => {
-    // In a real application, you would use a library like xlsx to generate the Excel file
-    console.log("Exporting attendees to Excel...");
-    alert("Excel export functionality would be implemented here");
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    switch (sortBy) {
+      case "date":
+        return (
+          new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+        );
+      case "attendance":
+        return b.attendanceRate - a.attendanceRate;
+      case "participants":
+        return b.totalAttended - a.totalAttended;
+      default:
+        return 0;
+    }
+  });
+
+  const handleDownloadExcel = (eventId: string, eventTitle: string) => {
+    console.log(`Descargando Excel para evento ${eventId}: ${eventTitle}`);
+    // Aquí se implementaría la descarga real
+    alert(`Descargando lista de asistentes del evento: ${eventTitle}`);
   };
 
-  const getStatusColor = (status: Attendee["status"]) => {
-    switch (status) {
-      case "confirmed":
-        return "bg-lime-100 text-lime-700";
-      case "pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "cancelled":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
+  const handleDownloadPDF = (eventId: string, eventTitle: string) => {
+    console.log(`Descargando PDF para evento ${eventId}: ${eventTitle}`);
+    alert(`Generando reporte PDF del evento: ${eventTitle}`);
+  };
+
+  const handleSendEmails = (eventId: string, eventTitle: string) => {
+    console.log(`Enviando emails para evento ${eventId}: ${eventTitle}`);
+    alert(`Preparando envío masivo de emails para: ${eventTitle}`);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("es-CO", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const getAttendanceColor = (rate: number) => {
+    if (rate >= 90) return "text-green-600";
+    if (rate >= 75) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  const totalStats = {
+    totalEvents: completedEvents.length,
+    totalRegistered: completedEvents.reduce(
+      (sum, event) => sum + event.totalRegistered,
+      0
+    ),
+    totalAttended: completedEvents.reduce(
+      (sum, event) => sum + event.totalAttended,
+      0
+    ),
+    averageAttendance: Math.round(
+      completedEvents.reduce((sum, event) => sum + event.attendanceRate, 0) /
+        completedEvents.length
+    ),
   };
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           {onBack && (
@@ -105,22 +161,13 @@ export default function AttendeeList({ eventId, onBack }: AttendeeListProps) {
           )}
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {eventId ? "Event Attendees" : "All Attendees"}
+              Eventos Completados
             </h1>
             <p className="text-gray-600">
-              {eventId
-                ? "Manage attendees for this specific event"
-                : "View and manage all event attendees"}
+              Gestiona los reportes de asistencia de eventos finalizados
             </p>
           </div>
         </div>
-        <button
-          onClick={handleExportToExcel}
-          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
-        >
-          <Download size={20} />
-          <span>Exportar a Excel</span>
-        </button>
       </div>
 
       {/* Search and Filter */}
@@ -133,7 +180,7 @@ export default function AttendeeList({ eventId, onBack }: AttendeeListProps) {
             />
             <input
               type="text"
-              placeholder="Buscar asistentes..."
+              placeholder="Buscar eventos completados..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -142,124 +189,168 @@ export default function AttendeeList({ eventId, onBack }: AttendeeListProps) {
           <div className="flex items-center space-x-2">
             <Filter size={20} className="text-gray-400" />
             <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
-              <option value="all">Todos los Estados</option>
-              <option value="confirmed">Confirmado</option>
-              <option value="pending">Pendiente</option>
-              <option value="cancelled">Cancelado</option>
+              <option value="date">Ordenar por Fecha</option>
+              <option value="attendance">Ordenar por Asistencia</option>
+              <option value="participants">Ordenar por Participantes</option>
             </select>
           </div>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
           <div className="text-2xl font-bold text-gray-900">
-            {attendees.filter((a) => a.status === "confirmed").length}
+            {totalStats.totalEvents}
           </div>
-          <div className="text-sm text-gray-600">Confirmados</div>
+          <div className="text-sm text-gray-600">Eventos Completados</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
           <div className="text-2xl font-bold text-gray-900">
-            {attendees.filter((a) => a.status === "pending").length}
+            {totalStats.totalRegistered}
           </div>
-          <div className="text-sm text-gray-600">Pendientes</div>
+          <div className="text-sm text-gray-600">Total Registrados</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
           <div className="text-2xl font-bold text-gray-900">
-            {attendees.length}
+            {totalStats.totalAttended}
           </div>
-          <div className="text-sm text-gray-600">Total</div>
+          <div className="text-sm text-gray-600">Total Asistentes</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="text-2xl font-bold text-green-600">
+            {totalStats.averageAttendance}%
+          </div>
+          <div className="text-sm text-gray-600">Asistencia Promedio</div>
         </div>
       </div>
 
-      {/* Attendees Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">
-                  Asistente
-                </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">
-                  Contacto
-                </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">
-                  Fecha de Registro
-                </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">
-                  Estado
-                </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAttendees.map((attendee) => (
-                <tr
-                  key={attendee.id}
-                  className="border-b border-gray-100 hover:bg-gray-50"
-                >
-                  <td className="py-3 px-4">
-                    <div className="flex items-center space-x-3">
-                      <img
-                        src={attendee.avatar}
-                        alt={attendee.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <span className="font-medium text-gray-900">
-                        {attendee.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-2 text-sm text-gray-600">
-                        <Mail size={14} />
-                        <span>{attendee.email}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-sm text-gray-600">
-                        <Phone size={14} />
-                        <span>{attendee.phone}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-600">
-                    {new Date(attendee.registrationDate).toLocaleDateString()}
-                  </td>
-                  <td className="py-3 px-4">
+      {/* Events Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {sortedEvents.map((event) => (
+          <div
+            key={event.id}
+            className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+          >
+            {/* Event Image */}
+            {event.imageUrl && (
+              <div className="h-48 bg-gray-200 overflow-hidden">
+                <img
+                  src={event.imageUrl}
+                  alt={event.eventTitle}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            {/* Event Content */}
+            <div className="p-6">
+              {/* Title and Tags */}
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                  {event.eventTitle}
+                </h3>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {event.tags.map((tag, index) => (
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        attendee.status
-                      )}`}
+                      key={index}
+                      className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
                     >
-                      {attendee.status === 'confirmed' ? 'Confirmado' :
-                       attendee.status === 'pending' ? 'Pendiente' :
-                       attendee.status === 'cancelled' ? 'Cancelado' : attendee.status}
+                      {tag}
                     </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center space-x-2">
-                      <button
-                        className="text-green-600 hover:text-green-700 text-sm"
-                        onClick={() => window.open(`mailto:${attendee.email}`)}
-                      >
-                        Enviar Email
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Event Details */}
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Calendar className="mr-2" size={16} />
+                  <span>{formatDate(event.eventDate)}</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <MapPin className="mr-2" size={16} />
+                  <span className="truncate">{event.eventLocation}</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <Users className="mr-2" size={16} />
+                  <span>
+                    {event.totalAttended} de {event.totalRegistered} asistieron
+                  </span>
+                </div>
+              </div>
+
+              {/* Attendance Rate */}
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium text-gray-700">
+                    Tasa de Asistencia
+                  </span>
+                  <span
+                    className={`text-sm font-semibold ${getAttendanceColor(
+                      event.attendanceRate
+                    )}`}
+                  >
+                    {event.attendanceRate}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${event.attendanceRate}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() =>
+                    handleDownloadExcel(event.id, event.eventTitle)
+                  }
+                  className="flex items-center space-x-1 bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors text-sm"
+                >
+                  <FileSpreadsheet size={16} />
+                  <span>Excel</span>
+                </button>
+                <button
+                  onClick={() => handleDownloadPDF(event.id, event.eventTitle)}
+                  className="flex items-center space-x-1 bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm"
+                >
+                  <FileText size={16} />
+                  <span>PDF</span>
+                </button>
+                <button
+                  onClick={() => handleSendEmails(event.id, event.eventTitle)}
+                  className="flex items-center space-x-1 bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                >
+                  <Mail size={16} />
+                  <span>Emails</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
+
+      {/* Empty State */}
+      {sortedEvents.length === 0 && (
+        <div className="text-center py-12">
+          <div className="text-gray-400 mb-4">
+            <Calendar size={64} className="mx-auto" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No se encontraron eventos
+          </h3>
+          <p className="text-gray-600">
+            No hay eventos completados que coincidan con tu búsqueda.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

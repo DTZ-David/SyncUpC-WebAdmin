@@ -23,4 +23,7 @@ export const ENDPOINTS = {
     UPDATE: "/event/update",
     DELETE: "/event/delete",
   },
+  CAREER: {
+    GET_ALL: "/career/getallcareers",
+  },
 };

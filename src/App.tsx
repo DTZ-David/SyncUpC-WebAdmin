@@ -116,7 +116,6 @@ function App() {
     }
   };
 
-  // Show authentication forms if not authenticated
   if (!isAuthenticated) {
     if (authMode === "login") {
       return (

@@ -1,10 +1,8 @@
-import React from "react";
 import {
   ArrowLeft,
   MapPin,
   Calendar,
   Clock,
-  Users,
   Globe,
   Edit,
   Trash2,
@@ -227,10 +225,11 @@ export default function EventDetails({
                 <MapPin className="text-gray-400 mt-1" size={20} />
                 <div>
                   <p className="font-medium text-gray-900">
-                    {event.eventLocation}
-                  </p>
-                  <p className="text-gray-600">
-                    {event.additionalDetails || "Universidad Popular del Cesar"}
+                    {event.eventLocation && event.address
+                      ? `${event.eventLocation} - ${event.address}`
+                      : event.eventLocation ||
+                        event.address ||
+                        "Ubicación no especificada"}
                   </p>
                 </div>
               </div>
@@ -401,18 +400,7 @@ export default function EventDetails({
                   {event.requiresRegistration !== false ? "Sí" : "No"}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Evento Público</span>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    event.isPublic !== false
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {event.isPublic !== false ? "Sí" : "No"}
-                </span>
-              </div>
+
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Guardado</span>
                 <span

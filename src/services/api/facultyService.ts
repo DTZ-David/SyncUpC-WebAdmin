@@ -1,8 +1,8 @@
 // src/services/facultyService.ts
 
-import { apiClient, ApiError } from "./api/apiClient";
-import { Faculty } from "../components/Auth/types";
-import { ENDPOINTS } from "./config/apiconfig";
+import { apiClient, ApiError } from "./apiClient";
+import { Faculty } from "../../components/Auth/types";
+import { ENDPOINTS } from "../config/apiconfig";
 
 export interface FacultyDTO {
   id: string;
