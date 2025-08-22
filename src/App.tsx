@@ -10,6 +10,7 @@ import AttendeeList from "./components/Attendees/AttendeeList";
 import EventDetails from "./components/Events/EventDetails";
 import StaffManagement from "./components/Staff/StaffManagement";
 import { authService } from "./services/api/authService";
+import { eventService } from "./services/api/eventService";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -95,6 +96,26 @@ function App() {
     setViewingEventDetails(null);
   };
 
+  const handleDeleteEvent = async (eventId: string) => {
+    if (window.confirm("¿Estás seguro de que quieres eliminar este evento?")) {
+      try {
+        const response = await eventService.deleteEvent(eventId);
+
+        if (response.isSuccess) {
+          alert("Evento eliminado correctamente");
+          // Volver a la lista de eventos después de eliminar
+          setViewingEventDetails(null);
+          setActiveTab("events");
+        } else {
+          throw new Error(response.message || "Error al eliminar el evento");
+        }
+      } catch (error: any) {
+        console.error("Error deleting event:", error);
+        alert(error.message || "Error al eliminar el evento");
+      }
+    }
+  };
+
   // Show authentication forms if not authenticated
   if (!isAuthenticated) {
     if (authMode === "login") {
@@ -130,6 +151,7 @@ function App() {
           event={viewingEventDetails}
           onBack={handleBackFromEventDetails}
           onEdit={handleEditEvent}
+          onDelete={handleDeleteEvent}
         />
       );
     }

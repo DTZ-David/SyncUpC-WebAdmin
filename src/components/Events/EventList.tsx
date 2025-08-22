@@ -130,14 +130,20 @@ export default function EventList({
   const handleDeleteEvent = async (eventId: string) => {
     if (window.confirm("¿Estás seguro de que quieres eliminar este evento?")) {
       try {
-        // Aquí implementarías la llamada al API para eliminar
         console.log("Deleting event with ID:", eventId);
-        alert("Evento eliminado correctamente");
-        // Recargar eventos después de eliminar
-        loadEvents();
-      } catch (error) {
+
+        const response = await eventService.deleteEvent(eventId);
+
+        if (response.isSuccess) {
+          alert("Evento eliminado correctamente");
+          // Recargar eventos después de eliminar
+          loadEvents();
+        } else {
+          throw new Error(response.message || "Error al eliminar el evento");
+        }
+      } catch (error: any) {
         console.error("Error deleting event:", error);
-        alert("Error al eliminar el evento");
+        alert(error.message || "Error al eliminar el evento");
       }
     }
   };

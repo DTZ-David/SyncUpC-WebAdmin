@@ -310,18 +310,6 @@ export default function EventForm({
             </div>
           )}
 
-          {/* Mostrar información de depuración en desarrollo */}
-          {process.env.NODE_ENV === "development" && isEditMode && (
-            <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg">
-              <p className="text-sm">
-                <strong>Modo edición:</strong> Editando evento ID: {event?.id}
-              </p>
-              <p className="text-sm">
-                <strong>Fecha de inicio:</strong> {formData.startDate}
-              </p>
-            </div>
-          )}
-
           {/* Basic Information */}
           <BasicInfoSection formData={formData} onChange={handleInputChange} />
 

@@ -65,7 +65,7 @@ export interface CreateEventRequest {
   additionalDetails: string;
 }
 
-// ← NUEVO: Interface para actualizar evento
+// Interface para actualizar evento
 export interface UpdateEventRequest {
   eventId: string;
   eventTitle: string;
@@ -99,7 +99,7 @@ export interface CreateEventResponse {
   errors: string[];
 }
 
-// ← NUEVO: Interface para respuesta de actualización
+// Interface para respuesta de actualización
 export interface UpdateEventResponse {
   statusCode: number;
   isSuccess: boolean;
@@ -108,11 +108,26 @@ export interface UpdateEventResponse {
   errors: string[];
 }
 
+// ← NUEVO: Interface para eliminar evento
+export interface DeleteEventRequest {
+  id: string;
+}
+
+// ← NUEVO: Interface para respuesta de eliminación
+export interface DeleteEventResponse {
+  statusCode: number;
+  isSuccess: boolean;
+  data: any; // El backend puede retornar null o información adicional
+  message: string;
+  errors: string[];
+}
+
 class EventService {
   private readonly endpoints = {
     GET_ALL_EVENTS: "/event/getalleventsmadeforu",
     CREATE_EVENT: "/event/createevent",
-    UPDATE_EVENT: "/event/updateevent", // ← NUEVO
+    UPDATE_EVENT: "/event/updateevent",
+    DELETE_EVENT: "/event/deleteevent", // ← NUEVO
   };
 
   async getAllEvents(): Promise<EventsResponse> {
@@ -163,7 +178,7 @@ class EventService {
     }
   }
 
-  // ← NUEVO: Método para actualizar evento
+  // Método para actualizar evento
   async updateEvent(
     eventData: UpdateEventRequest
   ): Promise<UpdateEventResponse> {
@@ -193,10 +208,87 @@ class EventService {
     }
   }
 
-  // ← NUEVO: Método para mapear datos del backend al formato del formulario
+  // ← NUEVO: Método para eliminar evento
+  async deleteEvent(eventId: string): Promise<DeleteEventResponse> {
+    try {
+      console.log(
+        "🔥 [DELETE EVENT] Iniciando eliminación de evento:",
+        eventId
+      );
+
+      // Asegurar que el token esté configurado
+      const user = authService.getCurrentUser();
+      console.log(
+        "🔑 [DELETE EVENT] Usuario actual:",
+        user ? "Encontrado" : "No encontrado"
+      );
+
+      if (!user?.token) {
+        console.error(
+          "❌ [DELETE EVENT] No hay token de autenticación disponible"
+        );
+        throw new Error("No hay token de autenticación disponible");
+      }
+
+      console.log(
+        "🔑 [DELETE EVENT] Token encontrado, configurando apiClient..."
+      );
+      apiClient.setAuthToken(user.token);
+
+      const deleteData: DeleteEventRequest = {
+        id: eventId,
+      };
+
+      console.log("📦 [DELETE EVENT] Datos a enviar:", deleteData);
+      console.log("🌐 [DELETE EVENT] Endpoint:", this.endpoints.DELETE_EVENT);
+      console.log("🔄 [DELETE EVENT] Enviando petición de eliminación...");
+
+      const response = await apiClient.delete<DeleteEventResponse>(
+        this.endpoints.DELETE_EVENT,
+        deleteData, // body data
+        undefined, // headers
+        true // requireAuth = true (necesita autenticación)
+      );
+
+      console.log("✅ [DELETE EVENT] Respuesta del servidor:");
+      console.log("📊 Status Code:", response.statusCode);
+      console.log("✅ Is Success:", response.isSuccess);
+      console.log("💬 Message:", response.message);
+      console.log("📄 Data:", response.data);
+      console.log("🚨 Errors:", response.errors);
+
+      if (response.isSuccess) {
+        console.log(
+          "🎉 [DELETE EVENT] Evento eliminado exitosamente del servidor"
+        );
+      } else {
+        console.warn(
+          "⚠️ [DELETE EVENT] El servidor respondió pero indica falla:"
+        );
+        console.warn("⚠️ Message:", response.message);
+        console.warn("⚠️ Errors:", response.errors);
+      }
+
+      return response;
+    } catch (error) {
+      console.error("💥 [DELETE EVENT] Error durante la eliminación:");
+      console.error("💥 Error completo:", error);
+      console.error(
+        "💥 Error message:",
+        error instanceof Error ? error.message : "Error desconocido"
+      );
+      console.error(
+        "💥 Stack trace:",
+        error instanceof Error ? error.stack : "No disponible"
+      );
+      throw error;
+    }
+  }
+
+  // Método para mapear datos del backend al formato del formulario
   mapBackendEventToFormData(event: Event): any {
     return {
-      id: event.id, // ← IMPORTANTE: Incluir el ID
+      id: event.id, // IMPORTANTE: Incluir el ID
       eventTitle: event.eventTitle || "",
       eventObjective: event.eventObjective || "",
       eventLocation: event.eventLocation || "",
@@ -229,7 +321,7 @@ class EventService {
     };
   }
 
-  // ← NUEVO: Método para transformar datos del formulario al formato de actualización
+  // Método para transformar datos del formulario al formato de actualización
   transformFormDataToUpdateRequest(formData: any): UpdateEventRequest {
     // Obtener el ID del evento del formData
     const eventId = formData.id || formData.eventId;
@@ -307,7 +399,7 @@ class EventService {
     };
   }
 
-  // ← NUEVO: Método helper para formatear fecha para inputs HTML
+  // Método helper para formatear fecha para inputs HTML
   private formatDateForInput(dateString: string): string {
     try {
       let date: Date;

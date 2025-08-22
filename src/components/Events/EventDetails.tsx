@@ -14,18 +14,19 @@ interface EventDetailsProps {
   event: any;
   onBack: () => void;
   onEdit: (event: any) => void;
+  onDelete: (eventId: string) => void; // ← AGREGAR ESTA LÍNEA
 }
 
 export default function EventDetails({
   event,
   onBack,
   onEdit,
+  onDelete,
 }: EventDetailsProps) {
   const handleDelete = () => {
     if (window.confirm("¿Estás seguro de que quieres eliminar este evento?")) {
-      console.log("Eliminando evento:", event.id);
-      alert("Evento eliminado correctamente");
-      onBack();
+      console.log("🎯 [EVENT DETAILS] Llamando onDelete con ID:", event.id);
+      onDelete(event.id); // ← CAMBIAR ESTA LÍNEA (era solo console.log y alert)
     }
   };
 

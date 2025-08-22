@@ -5,8 +5,6 @@ import { FormField } from "../FormField";
 export const TargetAudienceSection: React.FC<TargetAudienceProps> = ({
   formData,
   onChange,
-  hasError,
-  getError,
 }) => {
   return (
     <div className="space-y-6">
@@ -14,11 +12,7 @@ export const TargetAudienceSection: React.FC<TargetAudienceProps> = ({
         Audiencia Objetivo
       </h3>
 
-      <FormField
-        label="Selecciona la audiencia objetivo"
-        name="targetAudience"
-        error={getError("targetTeachers")} // Using targetTeachers as the validation field
-      >
+      <FormField label="Selecciona la audiencia objetivo" name="targetAudience">
         <div className="space-y-3">
           <label className="flex items-center space-x-3">
             <input

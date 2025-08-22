@@ -1,6 +1,7 @@
 // src/services/api/apiClient.ts
 
 import { API_CONFIG } from "../config/apiconfig";
+import { DeleteEventRequest } from "./eventService";
 
 export interface ApiResponse<T> {
   data: T;
@@ -158,6 +159,7 @@ class ApiClient {
 
   async delete<T>(
     endpoint: string,
+    deleteData?: any, // Hacer opcional por si no siempre necesitas enviar data
     headers?: Record<string, string>,
     requireAuth: boolean = true
   ): Promise<T> {
@@ -166,6 +168,7 @@ class ApiClient {
       {
         method: "DELETE",
         headers,
+        body: deleteData ? JSON.stringify(deleteData) : undefined, // ← AGREGAR ESTA LÍNEA
       },
       requireAuth
     );
