@@ -11,7 +11,7 @@ export interface UserAttendance {
 export interface AttendanceData {
   creationDate: string;
   eventId: string;
-  useerAttendanceDto: UserAttendance[]; // Mantenemos el typo del backend
+  userAttendanceDto: UserAttendance[]; // Corregido: sin la "e" extra
 }
 
 export interface AttendanceResponse {

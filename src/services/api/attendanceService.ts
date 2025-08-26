@@ -52,6 +52,27 @@ class AttendanceService {
   processAttendanceData(
     userAttendances: UserAttendance[]
   ): ProcessedAttendance[] {
+    // Validación y logs para debugging
+    console.log("🔍 Processing attendance data:", userAttendances);
+
+    if (!userAttendances) {
+      console.error("❌ userAttendances is undefined or null");
+      return [];
+    }
+
+    if (!Array.isArray(userAttendances)) {
+      console.error(
+        "❌ userAttendances is not an array:",
+        typeof userAttendances
+      );
+      return [];
+    }
+
+    if (userAttendances.length === 0) {
+      console.warn("⚠️ userAttendances array is empty");
+      return [];
+    }
+
     return userAttendances.map((attendance) => {
       const duration = this.calculateDuration(
         attendance.checkInTime,
@@ -119,13 +140,35 @@ class AttendanceService {
     try {
       const response = await this.getAttendanceList(eventId);
 
+      console.log(
+        "🔍 Excel - Full response structure:",
+        JSON.stringify(response, null, 2)
+      );
+
       if (!response.isSuccess || !response.data) {
         throw new Error("No se pudieron obtener los datos de asistencia");
       }
 
-      const processedData = this.processAttendanceData(
-        response.data.useerAttendanceDto // Cambio aquí: useerAttendanceDto en lugar de userAttendances
+      console.log("🔍 Excel - Response data:", response.data);
+      console.log(
+        "🔍 Excel - userAttendanceDto:",
+        response.data.userAttendanceDto
       );
+
+      // Validación adicional antes del procesamiento
+      const attendanceData = response.data.userAttendanceDto;
+      if (!attendanceData) {
+        throw new Error(
+          "No se encontraron datos de asistencia en la respuesta"
+        );
+      }
+
+      const processedData = this.processAttendanceData(attendanceData);
+
+      if (processedData.length === 0) {
+        console.warn("⚠️ No hay datos procesados para generar el Excel");
+        throw new Error("No hay datos de asistencia para procesar");
+      }
 
       // Crear contenido CSV (Excel puede abrir archivos CSV)
       const csvContent = this.generateCSVContent(processedData, eventTitle);
@@ -151,13 +194,32 @@ class AttendanceService {
     try {
       const response = await this.getAttendanceList(eventId);
 
+      console.log(
+        "🔍 Full response structure:",
+        JSON.stringify(response, null, 2)
+      );
+
       if (!response.isSuccess || !response.data) {
         throw new Error("No se pudieron obtener los datos de asistencia");
       }
 
-      const processedData = this.processAttendanceData(
-        response.data.useerAttendanceDto // Cambio aquí: useerAttendanceDto en lugar de userAttendances
-      );
+      console.log("🔍 Response data:", response.data);
+      console.log("🔍 userAttendanceDto:", response.data.userAttendanceDto);
+
+      // Validación adicional antes del procesamiento
+      const attendanceData = response.data.userAttendanceDto;
+      if (!attendanceData) {
+        throw new Error(
+          "No se encontraron datos de asistencia en la respuesta"
+        );
+      }
+
+      const processedData = this.processAttendanceData(attendanceData);
+
+      if (processedData.length === 0) {
+        console.warn("⚠️ No hay datos procesados para generar el PDF");
+        throw new Error("No hay datos de asistencia para procesar");
+      }
 
       // Generar contenido HTML para el PDF
       const htmlContent = this.generateHTMLContent(processedData, eventTitle);
