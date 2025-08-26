@@ -1,7 +1,6 @@
 // src/services/api/apiClient.ts
 
 import { API_CONFIG } from "../config/apiconfig";
-import { DeleteEventRequest } from "./eventService";
 
 export interface ApiResponse<T> {
   data: T;

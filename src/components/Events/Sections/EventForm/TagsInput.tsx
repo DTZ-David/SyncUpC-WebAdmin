@@ -1,7 +1,7 @@
 // components/Events/sections/TagsInput.tsx
 import React, { useState } from "react";
 import { X, Tag } from "lucide-react";
-import { TagsInputProps } from "../Types/EventTypes";
+import { TagsInputProps } from "../../Types/EventTypes";
 
 export const TagsInput: React.FC<TagsInputProps> = ({
   tags,

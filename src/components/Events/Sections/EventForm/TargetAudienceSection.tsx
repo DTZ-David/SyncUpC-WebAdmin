@@ -1,6 +1,6 @@
 import React from "react";
-import { TargetAudienceProps } from "../Types/EventTypes";
-import { FormField } from "../FormField";
+import { TargetAudienceProps } from "../../Types/EventTypes";
+import { FormField } from "./FormField";
 
 export const TargetAudienceSection: React.FC<TargetAudienceProps> = ({
   formData,

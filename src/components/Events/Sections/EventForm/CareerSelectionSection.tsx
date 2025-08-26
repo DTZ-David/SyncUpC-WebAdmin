@@ -1,7 +1,7 @@
 // components/Events/Sections/CareerSelectionSection.tsx
 import React, { useState, useEffect } from "react";
-import { EventFormData } from "../Types/EventTypes";
-import { careerService, Career } from "../../../services/api/careerService";
+import { EventFormData } from "../../Types/EventTypes";
+import { careerService, Career } from "../../../../services/api/careerService";
 
 interface CareerSelectionSectionProps {
   formData: EventFormData;

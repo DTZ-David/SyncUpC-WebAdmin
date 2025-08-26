@@ -4,10 +4,10 @@ import RegisterForm from "./components/Auth/RegisterForm";
 import Header from "./components/Layout/Header";
 import Sidebar from "./components/Layout/Sidebar";
 import Dashboard from "./components/Dashboard/Dashboard";
-import EventList from "./components/Events/EventList";
-import EventForm from "./components/Events/EventForm";
+import EventList from "./components/Events/ui/EventList";
+import EventForm from "./components/Events/ui/EventForm";
 import AttendeeList from "./components/Attendees/AttendeeList";
-import EventDetails from "./components/Events/EventDetails";
+import EventDetails from "./components/Events/ui/EventDetails";
 import StaffManagement from "./components/Staff/StaffManagement";
 import { authService } from "./services/api/authService";
 import { eventService } from "./services/api/eventService";
@@ -136,12 +136,7 @@ function App() {
 
   const renderMainContent = () => {
     if (viewingEventAttendees) {
-      return (
-        <AttendeeList
-          eventId={viewingEventAttendees}
-          onBack={handleBackFromAttendees}
-        />
-      );
+      return <AttendeeList onBack={handleBackFromAttendees} />;
     }
 
     if (viewingEventDetails) {

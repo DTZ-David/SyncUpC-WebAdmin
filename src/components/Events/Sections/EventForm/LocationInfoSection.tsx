@@ -1,7 +1,7 @@
 // components/Events/sections/LocationInfoSection.tsx
 import React from "react";
 import { MapPin } from "lucide-react";
-import { LocationInfoProps } from "../Types/EventTypes";
+import { LocationInfoProps } from "../../Types/EventTypes";
 
 export const LocationInfoSection: React.FC<LocationInfoProps> = ({
   formData,

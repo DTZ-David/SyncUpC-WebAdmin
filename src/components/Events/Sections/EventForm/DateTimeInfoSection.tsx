@@ -1,7 +1,7 @@
 // components/Events/sections/DateTimeInfoSection.tsx
 import React from "react";
 import { Calendar, Clock } from "lucide-react";
-import { DateTimeInfoProps } from "../Types/EventTypes";
+import { DateTimeInfoProps } from "../../Types/EventTypes";
 
 // Generar opciones de hora de 8 AM a 7 PM en intervalos de 30 minutos
 const generateTimeOptions = () => {
@@ -28,7 +28,7 @@ const timeOptions = generateTimeOptions();
 
 export const DateTimeInfoSection: React.FC<
   DateTimeInfoProps & { showRegistrationDates?: boolean }
-> = ({ formData, onChange, showRegistrationDates = true }) => {
+> = ({ formData, onChange }) => {
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-medium text-gray-900">

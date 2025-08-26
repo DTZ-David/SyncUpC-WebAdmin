@@ -7,14 +7,14 @@ import {
   TrendingUp,
   AlertCircle,
 } from "lucide-react";
-import { eventService, Event } from "../../services/api/eventService";
-
+import { eventService } from "../../services/api/eventService";
+import type { EventModel } from "../../services/types/EventTypes";
 interface DashboardProps {
   onViewEventDetails: (event: any) => void;
 }
 
 export default function Dashboard({ onViewEventDetails }: DashboardProps) {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<EventModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +52,7 @@ export default function Dashboard({ onViewEventDetails }: DashboardProps) {
 
     // Eventos confirmados (próximos y del día)
     const confirmedEvents = events.filter((event) => {
-      const status = eventService.getEventStatus(event.eventDate);
+      const status = eventService.getEventStatus(event);
       return status === "upcoming" || status === "confirmed";
     }).length;
 
@@ -107,16 +107,16 @@ export default function Dashboard({ onViewEventDetails }: DashboardProps) {
     .sort(
       (a, b) =>
         new Date(
-          b.eventDate.split(" ")[0].split("/").reverse().join("-")
+          b.eventStartDate.split(" ")[0].split("/").reverse().join("-")
         ).getTime() -
         new Date(
-          a.eventDate.split(" ")[0].split("/").reverse().join("-")
+          a.eventStartDate.split(" ")[0].split("/").reverse().join("-")
         ).getTime()
     )
     .slice(0, 3)
     .map((event) => {
       // Extraer fecha y hora del campo eventDate
-      const [datePart, timePart] = event.eventDate.split(" ");
+      const [, timePart] = event.eventStartDate.split(" ");
 
       return {
         // Campos originales del backend
@@ -124,13 +124,13 @@ export default function Dashboard({ onViewEventDetails }: DashboardProps) {
 
         // Campos adicionales para compatibilidad
         title: event.eventTitle,
-        date: eventService.formatEventDate(event.eventDate),
+        date: eventService.formatEventDate(event.eventStartDate),
         location: event.eventLocation,
         time: timePart, // Extraer la hora del campo eventDate
 
         // Otros campos calculados
         attendees: eventService.getParticipantCount(event),
-        status: eventService.getEventStatus(event.eventDate),
+        status: eventService.getEventStatus(event),
         image:
           event.imageUrls?.[0] ||
           "https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=400",

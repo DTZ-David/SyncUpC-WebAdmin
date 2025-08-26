@@ -1,7 +1,7 @@
 // components/Events/sections/VirtualEventSection.tsx
 import React from "react";
 import { Video, Users } from "lucide-react";
-import { VirtualEventProps } from "../Types/EventTypes";
+import { VirtualEventProps } from "../../Types/EventTypes";
 
 export const VirtualEventSection: React.FC<VirtualEventProps> = ({
   formData,

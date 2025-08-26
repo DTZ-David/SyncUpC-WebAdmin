@@ -19,11 +19,15 @@ export const ENDPOINTS = {
   },
   EVENT: {
     GET_ALL: "/event/getallevents",
+    GET_COMPLETED: "/event/getalleventsmadeforu",
     CREATE: "/event/create",
     UPDATE: "/event/update",
     DELETE: "/event/delete",
   },
   CAREER: {
     GET_ALL: "/career/getallcareers",
+  },
+  ATTENDANCE: {
+    GET_LIST: "/attendance/attendancelist",
   },
 };

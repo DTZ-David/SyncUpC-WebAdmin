@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   Download,
@@ -9,8 +9,10 @@ import {
   Filter,
   FileSpreadsheet,
   FileText,
-  Mail,
+  Loader,
 } from "lucide-react";
+import { attendanceService } from "../../services/api/attendanceService";
+import { eventService } from "../../services/api/eventService";
 
 interface CompletedEvent {
   id: string;
@@ -33,47 +35,46 @@ export default function CompletedEventsList({
 }: CompletedEventsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("date");
+  const [completedEvents, setCompletedEvents] = useState<CompletedEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [downloadingExcel, setDownloadingExcel] = useState<string | null>(null);
+  const [downloadingPDF, setDownloadingPDF] = useState<string | null>(null);
 
-  // Datos de ejemplo - estos vendrán del backend
-  const completedEvents: CompletedEvent[] = [
-    {
-      id: "1",
-      eventTitle:
-        "Congreso Internacional de Innovación y Tecnología Educativa 2024",
-      eventDate: "2024-11-15T09:00:00",
-      eventLocation: "Universidad Nacional, Valledupar",
-      totalRegistered: 150,
-      totalAttended: 132,
-      attendanceRate: 88,
-      imageUrl:
-        "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=200&fit=crop",
-      tags: ["Tecnología", "Educación", "Innovación"],
-    },
-    {
-      id: "2",
-      eventTitle: "Seminario de Investigación en Ciencias Aplicadas",
-      eventDate: "2024-10-22T14:00:00",
-      eventLocation: "Centro de Convenciones, Valledupar",
-      totalRegistered: 89,
-      totalAttended: 76,
-      attendanceRate: 85,
-      imageUrl:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=200&fit=crop",
-      tags: ["Ciencia", "Investigación"],
-    },
-    {
-      id: "3",
-      eventTitle: "Workshop de Desarrollo Sostenible",
-      eventDate: "2024-09-10T10:00:00",
-      eventLocation: "Auditorio Principal UNICESAR",
-      totalRegistered: 65,
-      totalAttended: 58,
-      attendanceRate: 89,
-      imageUrl:
-        "https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=400&h=200&fit=crop",
-      tags: ["Sostenibilidad", "Medio Ambiente"],
-    },
-  ];
+  // Cargar eventos completados desde el backend
+  useEffect(() => {
+    const loadCompletedEvents = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await eventService.getCompletedEvents();
+
+        if (response.isSuccess && response.data) {
+          // Transformar los datos del backend al formato requerido por la vista
+          const transformedEvents = response.data
+            .filter((event) => {
+              // Solo incluir eventos que estén completados
+              return eventService.getEventStatus(event) === "completed";
+            })
+            .map((event) =>
+              eventService.transformToCompletedEventFormat(event)
+            );
+
+          setCompletedEvents(transformedEvents);
+        } else {
+          setError(response.message || "Error al cargar eventos completados");
+        }
+      } catch (err) {
+        console.error("Error loading completed events:", err);
+        setError("Error al conectar con el servidor");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCompletedEvents();
+  }, []);
 
   const filteredEvents = completedEvents.filter((event) => {
     const matchesSearch =
@@ -100,20 +101,38 @@ export default function CompletedEventsList({
     }
   });
 
-  const handleDownloadExcel = (eventId: string, eventTitle: string) => {
-    console.log(`Descargando Excel para evento ${eventId}: ${eventTitle}`);
-    // Aquí se implementaría la descarga real
-    alert(`Descargando lista de asistentes del evento: ${eventTitle}`);
+  const handleDownloadExcel = async (eventId: string, eventTitle: string) => {
+    try {
+      setDownloadingExcel(eventId);
+      await attendanceService.downloadExcel(eventId, eventTitle);
+      console.log(`✅ Excel descargado para evento ${eventId}: ${eventTitle}`);
+    } catch (error) {
+      console.error("❌ Error descargando Excel:", error);
+      alert(
+        `Error al descargar Excel: ${
+          error instanceof Error ? error.message : "Error desconocido"
+        }`
+      );
+    } finally {
+      setDownloadingExcel(null);
+    }
   };
 
-  const handleDownloadPDF = (eventId: string, eventTitle: string) => {
-    console.log(`Descargando PDF para evento ${eventId}: ${eventTitle}`);
-    alert(`Generando reporte PDF del evento: ${eventTitle}`);
-  };
-
-  const handleSendEmails = (eventId: string, eventTitle: string) => {
-    console.log(`Enviando emails para evento ${eventId}: ${eventTitle}`);
-    alert(`Preparando envío masivo de emails para: ${eventTitle}`);
+  const handleDownloadPDF = async (eventId: string, eventTitle: string) => {
+    try {
+      setDownloadingPDF(eventId);
+      await attendanceService.downloadPDF(eventId, eventTitle);
+      console.log(`✅ PDF generado para evento ${eventId}: ${eventTitle}`);
+    } catch (error) {
+      console.error("❌ Error generando PDF:", error);
+      alert(
+        `Error al generar PDF: ${
+          error instanceof Error ? error.message : "Error desconocido"
+        }`
+      );
+    } finally {
+      setDownloadingPDF(null);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -130,21 +149,74 @@ export default function CompletedEventsList({
     return "text-red-600";
   };
 
-  const totalStats = {
-    totalEvents: completedEvents.length,
-    totalRegistered: completedEvents.reduce(
-      (sum, event) => sum + event.totalRegistered,
-      0
-    ),
-    totalAttended: completedEvents.reduce(
-      (sum, event) => sum + event.totalAttended,
-      0
-    ),
-    averageAttendance: Math.round(
-      completedEvents.reduce((sum, event) => sum + event.attendanceRate, 0) /
-        completedEvents.length
-    ),
-  };
+  // Calcular estadísticas usando el método del servicio
+  const totalStats =
+    completedEvents.length > 0
+      ? eventService.getCompletedEventsStats(completedEvents)
+      : {
+          totalEvents: 0,
+          totalRegistered: 0,
+          totalAttended: 0,
+          averageAttendance: 0,
+        };
+
+  // Estado de carga
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Loader className="animate-spin h-8 w-8 text-green-500 mx-auto mb-4" />
+          <p className="text-gray-600">Cargando eventos completados...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Estado de error
+  if (error) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft size={20} />
+              </button>
+            )}
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Eventos Completados
+              </h1>
+              <p className="text-gray-600">
+                Gestiona los reportes de asistencia de eventos finalizados
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Error State */}
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <div className="text-red-400 mb-4">
+            <Calendar size={64} className="mx-auto" />
+          </div>
+          <h3 className="text-lg font-medium text-red-900 mb-2">
+            Error al cargar eventos
+          </h3>
+          <p className="text-red-700 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -243,6 +315,10 @@ export default function CompletedEventsList({
                   src={event.imageUrl}
                   alt={event.eventTitle}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = "none";
+                  }}
                 />
               </div>
             )}
@@ -312,24 +388,31 @@ export default function CompletedEventsList({
                   onClick={() =>
                     handleDownloadExcel(event.id, event.eventTitle)
                   }
-                  className="flex items-center space-x-1 bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors text-sm"
+                  disabled={downloadingExcel === event.id}
+                  className="flex items-center space-x-1 bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 disabled:bg-green-300 disabled:cursor-not-allowed transition-colors text-sm"
                 >
-                  <FileSpreadsheet size={16} />
-                  <span>Excel</span>
+                  {downloadingExcel === event.id ? (
+                    <Loader className="animate-spin" size={16} />
+                  ) : (
+                    <FileSpreadsheet size={16} />
+                  )}
+                  <span>
+                    {downloadingExcel === event.id ? "Descargando..." : "Excel"}
+                  </span>
                 </button>
                 <button
                   onClick={() => handleDownloadPDF(event.id, event.eventTitle)}
-                  className="flex items-center space-x-1 bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm"
+                  disabled={downloadingPDF === event.id}
+                  className="flex items-center space-x-1 bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 disabled:bg-red-300 disabled:cursor-not-allowed transition-colors text-sm"
                 >
-                  <FileText size={16} />
-                  <span>PDF</span>
-                </button>
-                <button
-                  onClick={() => handleSendEmails(event.id, event.eventTitle)}
-                  className="flex items-center space-x-1 bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                >
-                  <Mail size={16} />
-                  <span>Emails</span>
+                  {downloadingPDF === event.id ? (
+                    <Loader className="animate-spin" size={16} />
+                  ) : (
+                    <FileText size={16} />
+                  )}
+                  <span>
+                    {downloadingPDF === event.id ? "Generando..." : "PDF"}
+                  </span>
                 </button>
               </div>
             </div>
@@ -338,7 +421,7 @@ export default function CompletedEventsList({
       </div>
 
       {/* Empty State */}
-      {sortedEvents.length === 0 && (
+      {sortedEvents.length === 0 && !loading && (
         <div className="text-center py-12">
           <div className="text-gray-400 mb-4">
             <Calendar size={64} className="mx-auto" />
@@ -347,7 +430,9 @@ export default function CompletedEventsList({
             No se encontraron eventos
           </h3>
           <p className="text-gray-600">
-            No hay eventos completados que coincidan con tu búsqueda.
+            {completedEvents.length === 0
+              ? "No hay eventos completados disponibles."
+              : "No hay eventos completados que coincidan con tu búsqueda."}
           </p>
         </div>
       )}

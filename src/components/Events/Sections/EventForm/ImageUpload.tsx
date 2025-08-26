@@ -1,12 +1,11 @@
 // components/Events/sections/ImageUpload.tsx
 import React from "react";
 import { Upload, X } from "lucide-react";
-import { ImageUploadProps } from "../Types/EventTypes";
+import { ImageUploadProps } from "../../Types/EventTypes";
 
-export const ImageUpload: React.FC<ImageUploadProps> = ({ 
-  onImageUpload, 
-  currentImage, 
-  isEditing 
+export const ImageUpload: React.FC<ImageUploadProps> = ({
+  onImageUpload,
+  currentImage,
 }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (onImageUpload) {
@@ -25,7 +24,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       <label className="block text-sm font-medium text-gray-700 mb-2">
         Imagen del Evento
       </label>
-      
+
       {currentImage ? (
         <div className="relative">
           <img
@@ -54,20 +53,22 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         </div>
       ) : (
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors">
-        <Upload className="mx-auto h-12 w-12 text-gray-400 mb-2" />
-        <div className="text-sm text-gray-600">
+          <Upload className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+          <div className="text-sm text-gray-600">
             <label className="cursor-pointer text-green-600 hover:text-green-700">
-            Subir una imagen
-            <input
-              type="file"
-              className="hidden"
-              accept="image/*"
-              onChange={handleFileChange}
-            />
-          </label>
-          <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF hasta 10MB</p>
+              Subir una imagen
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </label>
+            <p className="text-xs text-gray-500 mt-1">
+              PNG, JPG, GIF hasta 10MB
+            </p>
+          </div>
         </div>
-      </div>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 // components/Events/sections/EventSettingsSection.tsx
 import React from "react";
-import { EventSettingsProps } from "../Types/EventTypes";
+import { EventSettingsProps } from "../../Types/EventTypes";
 
 export const EventSettingsSection: React.FC<EventSettingsProps> = ({
   formData,

@@ -1,6 +1,6 @@
 // components/Events/sections/BasicInfoSection.tsx
 import React from "react";
-import { BasicInfoProps } from "../Types/EventTypes";
+import { BasicInfoProps } from "../../Types/EventTypes";
 
 export const BasicInfoSection: React.FC<BasicInfoProps> = ({
   formData,

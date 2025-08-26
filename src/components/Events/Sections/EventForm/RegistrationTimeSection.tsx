@@ -1,6 +1,6 @@
 // components/Events/Sections/RegistrationTimeSection.tsx
 import React from "react";
-import { EventFormData } from "../Types/EventTypes";
+import { EventFormData } from "../../Types/EventTypes";
 
 interface RegistrationTimeSectionProps {
   formData: EventFormData;
