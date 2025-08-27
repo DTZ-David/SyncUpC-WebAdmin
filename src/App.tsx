@@ -7,8 +7,8 @@ import Dashboard from "./components/Dashboard/Dashboard";
 import EventList from "./components/Events/ui/EventList";
 import EventForm from "./components/Events/ui/EventForm";
 import AttendeeList from "./components/Attendees/AttendeeList";
+import Metrics from "./components/Metrics/Metric";
 import EventDetails from "./components/Events/ui/EventDetails";
-import StaffManagement from "./components/Staff/StaffManagement";
 import { authService } from "./services/api/authService";
 import { eventService } from "./services/api/eventService";
 
@@ -164,8 +164,8 @@ function App() {
         );
       case "attendees":
         return <AttendeeList />;
-      case "staff":
-        return <StaffManagement />;
+      case "metrics":
+        return <Metrics />;
       case "settings":
         return (
           <div className="space-y-6">

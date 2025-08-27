@@ -25,7 +25,7 @@ export default function Sidebar({
     { id: "dashboard", label: "Panel Principal", icon: LayoutDashboard },
     { id: "events", label: "Eventos", icon: Calendar },
     { id: "attendees", label: "Asistentes", icon: Users },
-    { id: "staff", label: "Personal Admin", icon: UserPlus },
+    { id: "metrics", label: "Metricas", icon: UserPlus },
     { id: "settings", label: "Configuración", icon: Settings },
   ];
 
