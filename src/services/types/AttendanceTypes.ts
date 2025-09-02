@@ -5,7 +5,6 @@ export interface UserAttendance {
   apellido: string;
   numero: string;
   checkInTime: string;
-  checkOutTime: string;
 }
 
 export interface AttendanceData {
@@ -32,7 +31,4 @@ export interface ProcessedAttendance {
   apellido: string;
   numero: string;
   checkInTime: string;
-  checkOutTime: string;
-  duration?: string; // Duración calculada entre checkIn y checkOut
-  status: "Presente" | "Ausente";
 }

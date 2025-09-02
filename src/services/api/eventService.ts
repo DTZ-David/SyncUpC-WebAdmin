@@ -18,7 +18,7 @@ import { EventValidator } from "../utils/EventValidator";
 class EventService {
   private readonly endpoints = {
     GET_ALL_EVENTS: "/event/getallevents",
-    GET_COMPLETED_EVENTS: "/event/getalleventsmadeforu", // ← NUEVO ENDPOINT
+    GET_COMPLETED_EVENTS: "/event/getalleventsmadeforu", 
     CREATE_EVENT: "/event/createevent",
     UPDATE_EVENT: "/event/updateevent",
     DELETE_EVENT: "/event/deleteevent",

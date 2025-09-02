@@ -74,19 +74,11 @@ class AttendanceService {
     }
 
     return userAttendances.map((attendance) => {
-      const duration = this.calculateDuration(
-        attendance.checkInTime,
-        attendance.checkOutTime
-      );
-
       return {
         nombre: attendance.nombre,
         apellido: attendance.apellido,
         numero: attendance.numero,
         checkInTime: this.formatTime(attendance.checkInTime),
-        checkOutTime: this.formatTime(attendance.checkOutTime),
-        duration,
-        status: attendance.checkInTime ? "Presente" : "Ausente",
       };
     });
   }
@@ -94,23 +86,6 @@ class AttendanceService {
   /**
    * Calcula la duración entre check-in y check-out
    */
-  private calculateDuration(checkIn: string, checkOut: string): string {
-    if (!checkIn || !checkOut) return "N/A";
-
-    try {
-      const startTime = new Date(checkIn);
-      const endTime = new Date(checkOut);
-      const diffMs = endTime.getTime() - startTime.getTime();
-
-      const hours = Math.floor(diffMs / (1000 * 60 * 60));
-      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
-      return `${hours}h ${minutes}m`;
-    } catch (error) {
-      console.error("Error calculating duration:", error);
-      return "N/A";
-    }
-  }
 
   /**
    * Formatea la hora para mostrar
@@ -265,9 +240,6 @@ class AttendanceService {
           `"${row.apellido}"`,
           row.numero,
           `"${row.checkInTime}"`,
-          `"${row.checkOutTime}"`,
-          row.duration,
-          row.status,
         ].join(",")
       ),
     ];
@@ -276,7 +248,7 @@ class AttendanceService {
   }
 
   /**
-   * Genera contenido HTML para PDF
+   * Genera contenido HTML para PDF con logos institucionales
    */
   private generateHTMLContent(
     data: ProcessedAttendance[],
@@ -289,16 +261,7 @@ class AttendanceService {
         <td style="border: 1px solid #ddd; padding: 8px;">${row.nombre}</td>
         <td style="border: 1px solid #ddd; padding: 8px;">${row.apellido}</td>
         <td style="border: 1px solid #ddd; padding: 8px;">${row.numero}</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">${
-          row.checkInTime
-        }</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">${
-          row.checkOutTime
-        }</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">${row.duration}</td>
-        <td style="border: 1px solid #ddd; padding: 8px; color: ${
-          row.status === "Presente" ? "green" : "red"
-        };">${row.status}</td>
+        <td style="border: 1px solid #ddd; padding: 8px;">${row.checkInTime}</td>
       </tr>
     `
       )
@@ -311,22 +274,128 @@ class AttendanceService {
           <meta charset="UTF-8">
           <title>Reporte de Asistencia - ${eventTitle}</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .title { font-size: 24px; font-weight: bold; color: #333; }
-            .subtitle { font-size: 14px; color: #666; margin-top: 10px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th { background-color: #4CAF50; color: white; border: 1px solid #ddd; padding: 12px; text-align: left; }
-            .summary { margin-top: 30px; padding: 15px; background-color: #f9f9f9; border-radius: 5px; }
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 20px; 
+              line-height: 1.4;
+            }
+            .header { 
+              display: flex; 
+              align-items: center; 
+              justify-content: space-between; 
+              margin-bottom: 30px; 
+              padding-bottom: 20px;
+              border-bottom: 3px solid #1e3a8a;
+            }
+            .logos { 
+              display: flex; 
+              gap: 20px; 
+              align-items: center; 
+            }
+            .logo-container {
+              text-align: center;
+            }
+            .logo-img {
+              width: 60px;
+              height: 60px;
+              object-fit: contain;
+            }
+            .logo-text {
+              font-size: 10px;
+              margin-top: 5px;
+              color: #666;
+              font-weight: bold;
+            }
+            .header-content {
+              flex: 1;
+              text-align: center;
+              margin: 0 20px;
+            }
+            .title { 
+              font-size: 24px; 
+              font-weight: bold; 
+              color: #1e3a8a; 
+              margin-bottom: 5px;
+            }
+            .subtitle { 
+              font-size: 16px; 
+              color: #059669; 
+              margin-bottom: 5px;
+              font-weight: 600;
+            }
+            .date { 
+              font-size: 12px; 
+              color: #666; 
+            }
+            .institution {
+              font-size: 14px;
+              color: #1e3a8a;
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
+            .program {
+              font-size: 12px;
+              color: #059669;
+              font-weight: 600;
+            }
+            table { 
+              width: 100%; 
+              border-collapse: collapse; 
+              margin-top: 20px; 
+              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            th { 
+              background: linear-gradient(135deg, #1e3a8a 0%, #059669 100%);
+              color: white; 
+              border: 1px solid #ddd; 
+              padding: 12px; 
+              text-align: left; 
+              font-weight: bold;
+              font-size: 14px;
+            }
+            td {
+              font-size: 12px;
+              border: 1px solid #ddd; 
+              padding: 10px;
+            }
+            tr:nth-child(even) {
+              background-color: #f8fafc;
+            }
+            tr:hover {
+              background-color: #e2e8f0;
+            }
+            @media print {
+              body { margin: 0; }
+              .header { break-inside: avoid; }
+              table { break-inside: auto; }
+              tr { break-inside: avoid; break-after: auto; }
+            }
           </style>
         </head>
         <body>
           <div class="header">
-            <div class="title">Reporte de Asistencia</div>
-            <div class="subtitle">${eventTitle}</div>
-            <div class="subtitle">Generado el: ${new Date().toLocaleString(
-              "es-CO"
-            )}</div>
+            <div class="logos">
+              <div class="logo-container">
+                <img src="/upcLogo.png" alt="UPC Logo" class="logo-img" />
+                <div class="logo-text">UPC</div>
+              </div>
+              <div class="logo-container">
+                <img src="/ingSistemas.png" alt="Ingeniería de Sistemas Logo" class="logo-img" />
+                <div class="logo-text">Ingeniería<br>de Sistemas</div>
+              </div>
+            </div>
+            
+            <div class="header-content">
+              <div class="institution">Universidad Popular del Cesar</div>
+              <div class="program">Programa de Ingeniería de Sistemas</div>
+              <div class="title">Reporte de Asistencia</div>
+              <div class="subtitle">${eventTitle}</div>
+              <div class="date">Generado el: ${new Date().toLocaleString(
+                "es-CO"
+              )}</div>
+            </div>
+            
+            <div style="width: 120px;"></div>
           </div>
           
           <table>
@@ -336,9 +405,6 @@ class AttendanceService {
                 <th>Apellido</th>
                 <th>Número</th>
                 <th>Hora Entrada</th>
-                <th>Hora Salida</th>
-                <th>Duración</th>
-                <th>Estado</th>
               </tr>
             </thead>
             <tbody>
@@ -346,15 +412,9 @@ class AttendanceService {
             </tbody>
           </table>
           
-          <div class="summary">
-            <h3>Resumen</h3>
-            <p><strong>Total de registros:</strong> ${data.length}</p>
-            <p><strong>Presentes:</strong> ${
-              data.filter((d) => d.status === "Presente").length
-            }</p>
-            <p><strong>Ausentes:</strong> ${
-              data.filter((d) => d.status === "Ausente").length
-            }</p>
+          <div style="margin-top: 40px; text-align: center; font-size: 10px; color: #666;">
+            <p>Reporte generado automáticamente por el Sistema de Gestión de Asistencia</p>
+            <p>Universidad Popular del Cesar - Programa de Ingeniería de Sistemas</p>
           </div>
         </body>
       </html>
