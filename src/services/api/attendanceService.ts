@@ -250,6 +250,9 @@ class AttendanceService {
   /**
    * Genera contenido HTML para PDF con logos institucionales
    */
+  /**
+   * Genera contenido HTML para PDF con diseño profesional y sobrio
+   */
   private generateHTMLContent(
     data: ProcessedAttendance[],
     eventTitle: string
@@ -257,168 +260,245 @@ class AttendanceService {
     const rows = data
       .map(
         (row) => `
-      <tr>
-        <td style="border: 1px solid #ddd; padding: 8px;">${row.nombre}</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">${row.apellido}</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">${row.numero}</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">${row.checkInTime}</td>
-      </tr>
-    `
+    <tr>
+      <td>${row.nombre}</td>
+      <td>${row.apellido}</td>
+      <td>${row.numero}</td>
+      <td>${row.checkInTime}</td>
+    </tr>
+  `
       )
       .join("");
 
     return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Reporte de Asistencia - ${eventTitle}</title>
-          <style>
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Reporte de Asistencia - ${eventTitle}</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+
+          body { 
+            font-family: 'Times New Roman', serif;
+            margin: 40px; 
+            line-height: 1.5;
+            color: #000;
+            background-color: #fff;
+          }
+
+          /* Header institucional */
+          .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #000;
+          }
+
+          .logo-left {
+            width: 80px;
+            text-align: center;
+          }
+
+          .logo-right {
+            width: 80px;
+            text-align: center;
+          }
+
+          .logo-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 5px;
+          }
+
+          .logo-text {
+            font-size: 9px;
+            color: #333;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.2;
+          }
+
+          /* Contenido central */
+          .header-content {
+            flex: 1;
+            text-align: center;
+            margin: 0 30px;
+          }
+
+          .institution-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+          }
+
+          .program-name {
+            font-size: 12px;
+            color: #000;
+            margin-bottom: 20px;
+          }
+
+          .report-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+          }
+
+          .event-title {
+            font-size: 14px;
+            color: #000;
+            margin-bottom: 15px;
+            font-style: italic;
+          }
+
+          .generation-date {
+            font-size: 11px;
+            color: #666;
+          }
+
+          /* Información básica del evento */
+          .event-summary {
+            margin-bottom: 30px;
+            text-align: center;
+          }
+
+          .summary-text {
+            font-size: 12px;
+            color: #333;
+            margin-bottom: 5px;
+          }
+
+          /* Tabla */
+          table { 
+            width: 100%; 
+            border-collapse: collapse;
+            margin-bottom: 40px;
+          }
+
+          th { 
+            background-color: #f5f5f5;
+            color: #000; 
+            padding: 12px 8px; 
+            text-align: left; 
+            font-weight: bold;
+            font-size: 12px;
+            border: 1px solid #333;
+            text-transform: uppercase;
+          }
+
+          td {
+            padding: 10px 8px;
+            border: 1px solid #333;
+            font-size: 11px;
+          }
+
+          tbody tr:nth-child(even) {
+            background-color: #fafafa;
+          }
+
+          /* Footer */
+          .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+          }
+
+          /* Estilos de impresión */
+          @media print {
             body { 
-              font-family: Arial, sans-serif; 
-              margin: 20px; 
-              line-height: 1.4;
+              margin: 20px;
             }
+            
             .header { 
-              display: flex; 
-              align-items: center; 
-              justify-content: space-between; 
-              margin-bottom: 30px; 
-              padding-bottom: 20px;
-              border-bottom: 3px solid #1e3a8a;
+              break-inside: avoid; 
             }
-            .logos { 
-              display: flex; 
-              gap: 20px; 
-              align-items: center; 
-            }
-            .logo-container {
-              text-align: center;
-            }
-            .logo-img {
-              width: 60px;
-              height: 60px;
-              object-fit: contain;
-            }
-            .logo-text {
-              font-size: 10px;
-              margin-top: 5px;
-              color: #666;
-              font-weight: bold;
-            }
-            .header-content {
-              flex: 1;
-              text-align: center;
-              margin: 0 20px;
-            }
-            .title { 
-              font-size: 24px; 
-              font-weight: bold; 
-              color: #1e3a8a; 
-              margin-bottom: 5px;
-            }
-            .subtitle { 
-              font-size: 16px; 
-              color: #059669; 
-              margin-bottom: 5px;
-              font-weight: 600;
-            }
-            .date { 
-              font-size: 12px; 
-              color: #666; 
-            }
-            .institution {
-              font-size: 14px;
-              color: #1e3a8a;
-              font-weight: bold;
-              margin-bottom: 10px;
-            }
-            .program {
-              font-size: 12px;
-              color: #059669;
-              font-weight: 600;
-            }
+            
             table { 
-              width: 100%; 
-              border-collapse: collapse; 
-              margin-top: 20px; 
-              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+              break-inside: auto; 
             }
-            th { 
-              background: linear-gradient(135deg, #1e3a8a 0%, #059669 100%);
-              color: white; 
-              border: 1px solid #ddd; 
-              padding: 12px; 
-              text-align: left; 
-              font-weight: bold;
-              font-size: 14px;
-            }
-            td {
-              font-size: 12px;
-              border: 1px solid #ddd; 
-              padding: 10px;
-            }
-            tr:nth-child(even) {
-              background-color: #f8fafc;
-            }
-            tr:hover {
-              background-color: #e2e8f0;
-            }
-            @media print {
-              body { margin: 0; }
-              .header { break-inside: avoid; }
-              table { break-inside: auto; }
-              tr { break-inside: avoid; break-after: auto; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="logos">
-              <div class="logo-container">
-                <img src="/upcLogo.png" alt="UPC Logo" class="logo-img" />
-                <div class="logo-text">UPC</div>
-              </div>
-              <div class="logo-container">
-                <img src="/ingSistemas.png" alt="Ingeniería de Sistemas Logo" class="logo-img" />
-                <div class="logo-text">Ingeniería<br>de Sistemas</div>
-              </div>
-            </div>
             
-            <div class="header-content">
-              <div class="institution">Universidad Popular del Cesar</div>
-              <div class="program">Programa de Ingeniería de Sistemas</div>
-              <div class="title">Reporte de Asistencia</div>
-              <div class="subtitle">${eventTitle}</div>
-              <div class="date">Generado el: ${new Date().toLocaleString(
-                "es-CO"
-              )}</div>
-            </div>
-            
-            <div style="width: 120px;"></div>
+            tr { 
+              break-inside: avoid; 
+              break-after: auto; 
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <!-- Header institucional simple -->
+        <div class="header">
+          <div class="logo-left">
+            <img src="/upcLogo.png" alt="UPC Logo" class="logo-img" />
+            <div class="logo-text">UPC</div>
           </div>
           
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Número</th>
-                <th>Hora Entrada</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows}
-            </tbody>
-          </table>
-          
-          <div style="margin-top: 40px; text-align: center; font-size: 10px; color: #666;">
-            <p>Reporte generado automáticamente por el Sistema de Gestión de Asistencia</p>
-            <p>Universidad Popular del Cesar - Programa de Ingeniería de Sistemas</p>
+          <div class="header-content">
+            <div class="institution-name">Universidad Popular del Cesar</div>
+            <div class="program-name">Programa de Ingeniería de Sistemas</div>
+            <div class="report-title">Reporte de Asistencia</div>
+            <div class="event-title">${eventTitle}</div>
+            <div class="generation-date">
+              Generado el: ${new Date().toLocaleDateString("es-CO", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })} a las ${new Date().toLocaleTimeString("es-CO", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}
+            </div>
           </div>
-        </body>
-      </html>
-    `;
+          
+          <div class="logo-right">
+            <img src="/ingSistemas.png" alt="Ingeniería de Sistemas Logo" class="logo-img" />
+            <div class="logo-text">Ingeniería<br>de Sistemas</div>
+          </div>
+        </div>
+
+        <!-- Resumen del evento -->
+        <div class="event-summary">
+          <div class="summary-text">Total de asistentes registrados: <strong>${
+            data.length
+          }</strong></div>
+        </div>
+        
+        <!-- Tabla de asistencia -->
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Número</th>
+              <th>Hora de Entrada</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+        
+        <!-- Footer institucional -->
+        <div class="footer">
+          <div>Sistema de Gestión de Asistencia</div>
+          <div>Universidad Popular del Cesar - Programa de Ingeniería de Sistemas</div>
+        </div>
+      </body>
+    </html>
+  `;
   }
 
   /**
