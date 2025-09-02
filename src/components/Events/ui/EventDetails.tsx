@@ -62,8 +62,8 @@ export default function EventDetails({
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
             <EventLocation
-              address={event.address}
-              eventLocation={event.eventLocation}
+              address={event.campus.name}
+              eventLocation={event.space.name}
             />
 
             <EventDateTime

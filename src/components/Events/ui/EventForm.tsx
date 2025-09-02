@@ -14,6 +14,7 @@ export default function EventForm({
   onEventCreated,
 }: EventFormProps) {
   // Hooks
+  // Actualizar las importaciones también
   const {
     formData,
     currentImage,
@@ -23,11 +24,26 @@ export default function EventForm({
     submitError,
     setSubmitError,
     isEditMode,
+
+    // Nuevos datos de metadata
+    campuses,
+    availableSpaces,
+    eventCategories,
+    eventTypes,
+    isLoadingMetadata,
+
+    // Handlers actualizados
     handleInputChange,
+    handleCampusChange,
+    handleSpaceChange,
+    handleCategoryChange,
+    handleEventTypeChange,
+    handleCareerChange,
+    handleImageUpload,
+
+    // Legacy handlers
     handleAddTag,
     handleRemoveTag,
-    handleImageUpload,
-    handleCareerChange,
   } = useEventForm(event, isOpen);
 
   const { submitEvent, isUploadingImage } = useEventSubmission();
@@ -98,7 +114,10 @@ export default function EventForm({
     }
   };
 
-  // Renderizar el componente del step actual
+  // En EventForm.tsx, modifica renderCurrentStep():
+
+  // En EventForm.tsx, en renderCurrentStep():
+
   const renderCurrentStep = () => {
     const currentStepConfig = getCurrentStep();
     const StepComponent = currentStepConfig.component;
@@ -116,12 +135,35 @@ export default function EventForm({
       additionalProps.onCareerChange = handleCareerChange;
     }
 
-    if (currentStepConfig.id === "details") {
-      additionalProps.onAddTag = handleAddTag;
-      additionalProps.onRemoveTag = handleRemoveTag;
+    // ✅ Verifica el ID exacto del paso o usa una condición más amplia
+    if (
+      currentStepConfig.id === "datetime-location" ||
+      currentStepConfig.id.includes("location") ||
+      currentStepConfig.id.includes("datetime")
+    ) {
+      additionalProps.campuses = campuses;
+      additionalProps.availableSpaces = availableSpaces;
+      additionalProps.isLoadingMetadata = isLoadingMetadata;
+      additionalProps.onCampusChange = handleCampusChange;
+      additionalProps.onSpaceChange = handleSpaceChange;
+    }
+
+    if (
+      currentStepConfig.id === "details" ||
+      currentStepConfig.id === "final-details"
+    ) {
+      additionalProps.eventCategories = eventCategories;
+      additionalProps.eventTypes = eventTypes;
+      additionalProps.isLoadingMetadata = isLoadingMetadata;
+      additionalProps.onCategoryChange = handleCategoryChange;
+      additionalProps.onTypeChange = handleEventTypeChange;
       additionalProps.onImageUpload = handleImageUpload;
       additionalProps.currentImage = currentImage;
       additionalProps.isEditMode = isEditMode;
+
+      // Para compatibilidad con código legacy
+      additionalProps.onAddTag = handleAddTag;
+      additionalProps.onRemoveTag = handleRemoveTag;
     }
 
     return <StepComponent {...baseProps} {...additionalProps} />;

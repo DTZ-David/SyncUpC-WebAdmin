@@ -182,7 +182,8 @@ class EventService {
       id: event.id,
       eventTitle: event.eventTitle,
       eventDate: event.eventStartDate,
-      eventLocation: event.eventLocation,
+      campusName: event.campus?.name || "Campus no especificado",
+      spaceName: event.space?.name || "Espacio no especificado",
       totalRegistered: participantCount,
       totalAttended: participantCount, // Asumimos 100% asistencia para eventos completados
       attendanceRate: 100,

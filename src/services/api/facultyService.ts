@@ -2,7 +2,7 @@
 
 import { apiClient, ApiError } from "./apiClient";
 import { Faculty } from "../../components/Auth/types";
-import { ENDPOINTS } from "../config/apiconfig";
+import { ENDPOINTS } from "../config/apiConfig";
 
 export interface FacultyDTO {
   id: string;

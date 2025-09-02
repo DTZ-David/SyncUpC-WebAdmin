@@ -26,12 +26,6 @@ export const validateEventForm = (formData: EventFormData): string[] => {
   const dateTimeValidationErrors = validateEventDateTime(formData);
   errors.push(...dateTimeValidationErrors);
 
-  // Validaciones de registro
-  if (formData.requiresRegistration) {
-    const registrationValidationErrors = validateRegistrationDateTime(formData);
-    errors.push(...registrationValidationErrors);
-  }
-
   // Validación de audiencia objetivo
   if (!hasTargetAudience(formData)) {
     errors.push("Debe seleccionar al menos una audiencia objetivo");
@@ -62,40 +56,6 @@ const validateEventDateTime = (formData: EventFormData): string[] => {
     if (startDateTime >= endDateTime) {
       errors.push(
         "La fecha y hora de fin debe ser posterior a la fecha y hora de inicio"
-      );
-    }
-  }
-
-  return errors;
-};
-
-const validateRegistrationDateTime = (formData: EventFormData): string[] => {
-  const errors: string[] = [];
-
-  if (!formData.registrationStartTime) {
-    errors.push("La hora de inicio de registro es obligatoria");
-  }
-
-  if (!formData.registrationEndTime) {
-    errors.push("La hora de fin de registro es obligatoria");
-  }
-
-  if (
-    formData.registrationStart &&
-    formData.registrationEnd &&
-    formData.registrationStartTime &&
-    formData.registrationEndTime
-  ) {
-    const regStartDateTime = new Date(
-      `${formData.registrationStart}T${formData.registrationStartTime}`
-    );
-    const regEndDateTime = new Date(
-      `${formData.registrationEnd}T${formData.registrationEndTime}`
-    );
-
-    if (regStartDateTime >= regEndDateTime) {
-      errors.push(
-        "La fecha y hora de fin de registro debe ser posterior a la fecha y hora de inicio"
       );
     }
   }

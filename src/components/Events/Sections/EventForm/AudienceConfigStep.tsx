@@ -1,7 +1,6 @@
 import { TargetAudienceSection } from "../../Sections/EventForm/TargetAudienceSection";
 import { EventSettingsSection } from "../../Sections/EventForm/EventSettingsSection";
 import { CareerSelectionSection } from "../../Sections/EventForm/CareerSelectionSection";
-import { RegistrationTimeSection } from "../../Sections/EventForm/RegistrationTimeSection";
 interface AudienceConfigStepProps {
   formData: any;
   onChange: (
@@ -31,14 +30,6 @@ export function AudienceConfigStep({
             onChange={onCareerChange}
             disabled={isSubmitting}
           />
-
-          {formData.requiresRegistration && (
-            <RegistrationTimeSection
-              formData={formData}
-              onChange={onChange}
-              disabled={isSubmitting}
-            />
-          )}
         </div>
       </div>
     </div>

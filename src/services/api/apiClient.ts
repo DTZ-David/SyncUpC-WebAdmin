@@ -1,6 +1,6 @@
 // src/services/api/apiClient.ts
 
-import { API_CONFIG } from "../config/apiconfig";
+import { API_CONFIG } from "../config/apiConfig";
 
 export interface ApiResponse<T> {
   data: T;

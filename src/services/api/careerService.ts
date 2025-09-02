@@ -1,6 +1,6 @@
 // services/api/careerService.ts
 
-import { API_CONFIG, ENDPOINTS } from "../config/apiconfig";
+import { API_CONFIG, ENDPOINTS } from "../config/apiConfig";
 
 export interface Career {
   id: string;

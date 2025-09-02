@@ -1,49 +1,91 @@
 // components/Events/sections/LocationInfoSection.tsx
 import React from "react";
-import { MapPin } from "lucide-react";
+import { MapPin, Building } from "lucide-react";
 import { LocationInfoProps } from "../../Types/EventTypes";
+import { Campus, Space } from "../../../../services/types/EventTypes";
+import { CustomSelect } from "./CustomSelect";
 
-export const LocationInfoSection: React.FC<LocationInfoProps> = ({
+interface UpdatedLocationInfoProps extends Omit<LocationInfoProps, "onChange"> {
+  campuses: Campus[];
+  availableSpaces: Space[];
+  isLoadingMetadata: boolean;
+  onCampusChange: (campusId: string) => void;
+  onSpaceChange: (spaceId: string) => void;
+}
+// Agrega estos console.logs al inicio del componente LocationInfoSection
+
+export const LocationInfoSection: React.FC<UpdatedLocationInfoProps> = ({
   formData,
-  onChange,
+  campuses,
+  availableSpaces,
+  isLoadingMetadata,
+  onCampusChange,
+  onSpaceChange,
 }) => {
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Ubicación del Evento *
-        </label>
-        <div className="relative">
-          <MapPin
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            size={18}
-          />
-          <input
-            type="text"
-            name="eventLocation"
-            required
-            value={formData.eventLocation}
-            onChange={onChange}
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-            placeholder="Nombre del lugar"
-          />
-        </div>
-      </div>
+  // 🔍 DEBUG: Agregar estos logs temporalmente
+  console.log("🏫 LocationInfoSection - Props recibidos:");
+  console.log("campuses:", campuses);
+  console.log("availableSpaces:", availableSpaces);
+  console.log("isLoadingMetadata:", isLoadingMetadata);
+  console.log("formData.campusId:", formData.campusId);
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Dirección *
-        </label>
-        <input
-          type="text"
-          name="address"
-          required
-          value={formData.address}
-          onChange={onChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
-          placeholder="Dirección completa"
-        />
-      </div>
+  // 🔍 DEBUG: Ver qué se está pasando al CustomSelect
+  const campusOptions = (campuses || []).map((campus) => ({
+    id: campus.id,
+    name: campus.name,
+    description: campus.description,
+  }));
+
+  const spaceOptions = (availableSpaces || []).map((space) => ({
+    id: space.id,
+    name: space.name,
+    description: space.description,
+  }));
+
+  console.log("🎯 Opciones mapeadas para Campus:", campusOptions);
+  console.log("🎯 Opciones mapeadas para Spaces:", spaceOptions);
+
+  return (
+    <div className="space-y-6">
+      {/* ... resto del componente igual ... */}
+
+      {/* Campus Selection - usar la variable mapeada */}
+      <CustomSelect
+        label="Campus"
+        options={campusOptions} // usar la variable en lugar del mapeo inline
+        value={formData.campusId}
+        onChange={(value) => onCampusChange(value as string)}
+        required={true}
+        placeholder={
+          isLoadingMetadata ? "Cargando campus..." : "Seleccionar campus"
+        }
+        disabled={isLoadingMetadata}
+        loading={isLoadingMetadata}
+        icon={<Building size={18} />}
+      />
+
+      {/* Space Selection - usar la variable mapeada */}
+      <CustomSelect
+        label="Espacio / Salón"
+        options={spaceOptions} // usar la variable en lugar del mapeo inline
+        value={formData.spaceId}
+        onChange={(value) => onSpaceChange(value as string)}
+        required={true}
+        placeholder={
+          !formData.campusId
+            ? "Primero selecciona un campus"
+            : availableSpaces.length === 0
+            ? "No hay espacios disponibles"
+            : "Seleccionar espacio"
+        }
+        disabled={
+          !formData.campusId ||
+          availableSpaces.length === 0 ||
+          isLoadingMetadata
+        }
+        loading={isLoadingMetadata}
+        icon={<MapPin size={18} />}
+      />
     </div>
   );
 };

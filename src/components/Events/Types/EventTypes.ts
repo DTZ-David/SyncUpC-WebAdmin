@@ -1,67 +1,53 @@
-// types/eventTypes.ts
-export interface EventFormData {
-  startTime: any;
-  endTime: any;
-  registrationStartTime: any;
-  registrationEndTime: any;
-  eventTitle: string;
-  eventObjective: string;
-  eventLocation: string;
-  address: string;
-  startDate: string;
-  endDate: string;
-  registrationStart: string;
-  registrationEnd: string;
-  careerIds: string[];
-  targetTeachers: boolean;
-  targetStudents: boolean;
-  targetAdministrative: boolean;
-  targetGeneral: boolean;
-  isVirtual: boolean;
-  meetingUrl: string;
-  maxCapacity: string;
-  requiresRegistration: boolean;
-  isPublic: boolean;
-  tags: string[];
-  imageUrls: string[];
-  additionalDetails: string;
-} // Types/EventTypes.ts (asumiendo la estructura)
+// Types/EventTypes.ts - Actualizado
 export interface EventFormData {
   eventTitle: string;
   eventObjective: string;
-  eventLocation: string;
-  address: string;
-  startDate: string;
-  endDate: string;
-  registrationStart: string;
-  registrationEnd: string;
-  careerIds: string[];
-  targetTeachers: boolean;
-  targetStudents: boolean;
-  targetAdministrative: boolean;
-  targetGeneral: boolean;
-  isVirtual: boolean;
-  meetingUrl: string;
-  maxCapacity: string;
-  requiresRegistration: boolean;
-  isPublic: boolean;
-  tags: string[];
-  imageUrls: string[];
-  additionalDetails: string;
-}
 
-export interface EventFormProps {
-  isOpen: boolean;
-  onClose: () => void;
-  event?: any; // Puedes tipar esto más específicamente según tu Event interface
-  onEventCreated?: (event: any) => void; // ← NUEVO: Callback opcional para cuando se crea un evento
+  // Nuevos campos para campus y espacios
+  campusId: string;
+  spaceId: string;
+
+  // Fechas y horarios
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
+  registrationStart: string;
+  registrationStartTime: string;
+  registrationEnd: string;
+  registrationEndTime: string;
+
+  careerIds: string[];
+  targetTeachers: boolean;
+  targetStudents: boolean;
+  targetAdministrative: boolean;
+  targetGeneral: boolean;
+  isVirtual: boolean;
+  meetingUrl: string;
+  maxCapacity: string;
+  requiresRegistration: boolean;
+  isPublic: boolean;
+
+  // Nuevos campos para categorías y tipos
+  eventCategoryIds: string[];
+  eventTypeIds: string[];
+
+  imageUrls: string[];
+  additionalDetails: string;
+
+  // Campos legacy para compatibilidad (opcionales)
+  eventLocation?: string;
+  address?: string;
+  tags?: string[];
 }
 
 export interface EventFormProps {
   isOpen: boolean;
   onClose: () => void;
   event?: any;
+  onEventCreated?: (event: any) => void;
 }
+
 type FormChangeEvent = React.ChangeEvent<
   HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
 >;
@@ -77,7 +63,11 @@ export interface BasicInfoProps {
 
 export interface LocationInfoProps {
   formData: EventFormData;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => void;
+  onCampusChange?: (campusId: string) => void;
+  onSpaceChange?: (spaceId: string) => void;
 }
 
 export interface DateTimeInfoProps {
@@ -100,10 +90,11 @@ export interface EventSettingsProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export interface TagsInputProps {
-  tags: string[];
-  onAddTag: (tag: string) => void;
-  onRemoveTag: (tag: string) => void;
+export interface CategoryTypeInputProps {
+  categories: string[];
+  eventTypes: string[];
+  onCategoryChange: (categoryIds: string[]) => void;
+  onTypeChange: (typeIds: string[]) => void;
 }
 
 export interface ImageUploadProps {

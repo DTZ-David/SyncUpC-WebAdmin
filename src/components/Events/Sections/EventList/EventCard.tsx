@@ -27,10 +27,15 @@ export function EventCard({
     >
       <div className="aspect-video bg-gray-200 relative overflow-hidden">
         <img
-          src={event.image}
-          alt={event.eventTitle}
-          className="w-full h-full object-cover"
+          src={event.image || "/logo.svg"}
+          alt={event.eventTitle || "Evento sin título"}
+          className="w-full h-full object-contain bg-white"
+          onError={(e) => {
+            const target = e.currentTarget as HTMLImageElement;
+            target.src = "/logo.svg";
+          }}
         />
+
         <div className="absolute top-4 right-4">
           <span
             className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
@@ -57,7 +62,7 @@ export function EventCard({
           </div>
           <div className="flex items-center">
             <span className="w-16">Lugar:</span>
-            <span className="truncate">{event.eventLocation}</span>
+            <span className="truncate">{event.campus.name}</span>
           </div>
         </div>
 

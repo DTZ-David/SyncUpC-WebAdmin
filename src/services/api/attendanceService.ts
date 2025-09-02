@@ -8,7 +8,7 @@ import type {
   ProcessedAttendance,
   UserAttendance,
 } from "../types/AttendanceTypes";
-import { ENDPOINTS } from "../config/apiconfig";
+import { ENDPOINTS } from "../config/apiConfig";
 
 class AttendanceService {
   private ensureAuthenticated(): void {

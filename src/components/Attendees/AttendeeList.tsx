@@ -18,7 +18,8 @@ interface CompletedEvent {
   id: string;
   eventTitle: string;
   eventDate: string;
-  eventLocation: string;
+  campusName: string;
+  spaceName: string;
   totalRegistered: number;
   totalAttended: number;
   attendanceRate: number;
@@ -79,7 +80,7 @@ export default function CompletedEventsList({
   const filteredEvents = completedEvents.filter((event) => {
     const matchesSearch =
       event.eventTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.eventLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.campusName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.tags.some((tag) =>
         tag.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -258,18 +259,6 @@ export default function CompletedEventsList({
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
-          <div className="flex items-center space-x-2">
-            <Filter size={20} className="text-gray-400" />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
-              <option value="date">Ordenar por Fecha</option>
-              <option value="attendance">Ordenar por Asistencia</option>
-              <option value="participants">Ordenar por Participantes</option>
-            </select>
-          </div>
         </div>
       </div>
 
@@ -350,7 +339,7 @@ export default function CompletedEventsList({
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <MapPin className="mr-2" size={16} />
-                  <span className="truncate">{event.eventLocation}</span>
+                  <span className="truncate">{event.campusName}</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <Users className="mr-2" size={16} />
