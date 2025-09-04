@@ -6,7 +6,6 @@ import {
   BarChart3,
   BookOpen,
   GraduationCap,
-  MapPin,
   Clock,
   Download,
   FileSpreadsheet,
@@ -18,67 +17,24 @@ import {
   Activity,
   Filter,
   X,
+  AlertCircle,
 } from "lucide-react";
-
-interface EventMetrics {
-  // Métricas de eventos
-  totalEvents: number;
-  attendanceRateByEvent: {
-    eventName: string;
-    rate: number;
-    registered: number;
-    attended: number;
-  }[];
-  mostPopularEvents: { name: string; attendees: number; capacity: number }[];
-  monthlyParticipation: { month: string; attendees: number; events: number }[];
-  capacityUtilization: {
-    eventName: string;
-    utilization: number;
-    attended: number;
-    capacity: number;
-  }[];
-
-  // Métricas de usuarios
-  participationFrequency: {
-    userId: string;
-    userName: string;
-    eventsAttended: number;
-  }[];
-  mostActiveUsers: { name: string; eventsCount: number; lastEvent: string }[];
-  userRetention: {
-    total: number;
-    multipleEvents: number;
-    retentionRate: number;
-  };
-  newVsRecurrent: { event: string; newUsers: number; recurrentUsers: number }[];
-
-  // Métricas de gestión académica
-  complianceIndex: number;
-  facultyDistribution: { faculty: string; count: number; percentage: number }[];
-  avgAttendanceByEventType: {
-    type: string;
-    avgAttendance: number;
-    totalEvents: number;
-  }[];
-  timeSlotTrends: {
-    timeSlot: string;
-    avgAttendance: number;
-    eventCount: number;
-  }[];
-  dayTrends: { day: string; avgAttendance: number; eventCount: number }[];
-}
+import { eventMetadataService } from "../../services/api/eventMetadataService";
+import { facultyService } from "../../services/api/facultyService";
+import { EventType, EventCategory } from "../../services/types/EventTypes";
+import { MetricsFilters } from "../../services/types/MetricsTypes";
+import { Faculty } from "../Auth/types";
+import { useMetrics } from "./hooks/useMetrics";
 
 export default function EventMetricsDashboard() {
-  const [metricsData, setMetricsData] = useState<EventMetrics | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"events" | "users" | "academic">(
     "events"
   );
 
   // Filtros
   const [dateRange, setDateRange] = useState({
-    start: "2024-09-01",
-    end: "2024-12-01",
+    start: "2025-06-01",
+    end: "2025-12-30",
   });
   const [selectedFilters, setSelectedFilters] = useState({
     faculty: "",
@@ -87,136 +43,64 @@ export default function EventMetricsDashboard() {
   });
   const [showFilters, setShowFilters] = useState(false);
 
-  const facultyOptions = [
-    "Ingeniería",
-    "Ciencias",
-    "Humanidades",
-    "Administración",
-  ];
-  const eventTypeOptions = [
-    "Conferencia",
-    "Taller",
-    "Seminario",
-    "Mesa Redonda",
-    "Workshop",
-  ];
-  const categoryOptions = [
-    "Académico",
-    "Cultural",
-    "Deportivo",
-    "Tecnológico",
-    "Investigación",
-  ];
+  // Estados para opciones de filtros
+  const [facultyOptions, setFacultyOptions] = useState<Faculty[]>([]);
+  const [eventTypeOptions, setEventTypeOptions] = useState<EventType[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<EventCategory[]>([]);
+  const [loadingFilterOptions, setLoadingFilterOptions] = useState(false);
 
-  // Datos simulados
+  // Crear filtros para la API
+  const apiFilters: MetricsFilters = {
+    dateFrom: dateRange.start ? `${dateRange.start}T00:00:00.000Z` : undefined,
+    dateTo: dateRange.end ? `${dateRange.end}T23:59:59.999Z` : undefined,
+    faculty: selectedFilters.faculty || undefined,
+    eventType: selectedFilters.eventType || undefined,
+    category: selectedFilters.category || undefined,
+  };
+
+  // Hook personalizado para métricas
+  const { metrics, loading, error, refreshMetrics } = useMetrics(
+    apiFilters,
+    true
+  );
+
+  // Cargar opciones de filtros
   useEffect(() => {
-    const fetchMetrics = async () => {
-      setIsLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    const loadFilterOptions = async () => {
+      setLoadingFilterOptions(true);
+      try {
+        const [faculties, eventTypes, categories] = await Promise.all([
+          facultyService.getAllFaculties(),
+          eventMetadataService.getAllEventTypes(),
+          eventMetadataService.getAllEventCategories(),
+        ]);
 
-      setMetricsData({
-        totalEvents: 85,
-        attendanceRateByEvent: [
-          {
-            eventName: "IA y Futuro",
-            rate: 92.5,
-            registered: 120,
-            attended: 111,
-          },
-          {
-            eventName: "Desarrollo Web",
-            rate: 78.3,
-            registered: 150,
-            attended: 117,
-          },
-          {
-            eventName: "Ciberseguridad",
-            rate: 88.1,
-            registered: 109,
-            attended: 96,
-          },
-        ],
-        mostPopularEvents: [
-          { name: "Conferencia de IA", attendees: 245, capacity: 250 },
-          { name: "Taller React", attendees: 198, capacity: 200 },
-          { name: "Seminario Python", attendees: 187, capacity: 200 },
-        ],
-        monthlyParticipation: [
-          { month: "Sep", attendees: 892, events: 18 },
-          { month: "Oct", attendees: 1156, events: 24 },
-          { month: "Nov", attendees: 1334, events: 28 },
-          { month: "Dic", attendees: 987, events: 15 },
-        ],
-        capacityUtilization: [
-          {
-            eventName: "Workshop Python",
-            utilization: 98,
-            attended: 98,
-            capacity: 100,
-          },
-          {
-            eventName: "Charla StartUps",
-            utilization: 85,
-            attended: 85,
-            capacity: 100,
-          },
-          {
-            eventName: "Mesa Redonda Tech",
-            utilization: 76,
-            attended: 152,
-            capacity: 200,
-          },
-        ],
-        participationFrequency: [
-          { userId: "1", userName: "Carlos Mendez", eventsAttended: 12 },
-          { userId: "2", userName: "Ana García", eventsAttended: 9 },
-          { userId: "3", userName: "Luis Torres", eventsAttended: 8 },
-        ],
-        mostActiveUsers: [
-          { name: "María López", eventsCount: 15, lastEvent: "2024-11-28" },
-          { name: "Juan Pérez", eventsCount: 12, lastEvent: "2024-11-25" },
-          { name: "Sofia Rivera", eventsCount: 11, lastEvent: "2024-11-30" },
-        ],
-        userRetention: {
-          total: 1247,
-          multipleEvents: 523,
-          retentionRate: 41.9,
-        },
-        newVsRecurrent: [
-          { event: "IA Conference", newUsers: 45, recurrentUsers: 78 },
-          { event: "Web Dev Workshop", newUsers: 62, recurrentUsers: 34 },
-          { event: "Data Science Talk", newUsers: 38, recurrentUsers: 89 },
-        ],
-        complianceIndex: 82.3,
-        facultyDistribution: [
-          { faculty: "Ingeniería", count: 1245, percentage: 52.1 },
-          { faculty: "Ciencias", count: 687, percentage: 28.7 },
-          { faculty: "Humanidades", count: 324, percentage: 13.5 },
-          { faculty: "Administración", count: 136, percentage: 5.7 },
-        ],
-        avgAttendanceByEventType: [
-          { type: "Conferencia", avgAttendance: 156, totalEvents: 25 },
-          { type: "Taller", avgAttendance: 78, totalEvents: 32 },
-          { type: "Seminario", avgAttendance: 95, totalEvents: 18 },
-          { type: "Mesa Redonda", avgAttendance: 45, totalEvents: 10 },
-        ],
-        timeSlotTrends: [
-          { timeSlot: "08:00-12:00", avgAttendance: 67, eventCount: 15 },
-          { timeSlot: "14:00-18:00", avgAttendance: 98, eventCount: 45 },
-          { timeSlot: "18:00-20:00", avgAttendance: 134, eventCount: 25 },
-        ],
-        dayTrends: [
-          { day: "Lunes", avgAttendance: 78, eventCount: 12 },
-          { day: "Martes", avgAttendance: 92, eventCount: 18 },
-          { day: "Miércoles", avgAttendance: 105, eventCount: 22 },
-          { day: "Jueves", avgAttendance: 87, eventCount: 20 },
-          { day: "Viernes", avgAttendance: 123, eventCount: 13 },
-        ],
-      });
-      setIsLoading(false);
+        setFacultyOptions(faculties);
+
+        if (eventTypes.isSuccess) {
+          setEventTypeOptions(eventTypes.data);
+        }
+
+        if (categories.isSuccess) {
+          setCategoryOptions(categories.data);
+        }
+      } catch (error) {
+        console.error("Error loading filter options:", error);
+      } finally {
+        setLoadingFilterOptions(false);
+      }
     };
 
-    fetchMetrics();
+    loadFilterOptions();
+  }, []);
+
+  // Efecto para actualizar métricas cuando cambien los filtros
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      refreshMetrics(apiFilters);
+    }, 500); // Debounce de 500ms
+
+    return () => clearTimeout(timeoutId);
   }, [dateRange, selectedFilters]);
 
   const MetricCard = ({
@@ -258,11 +142,33 @@ export default function EventMetricsDashboard() {
     setSelectedFilters({ faculty: "", eventType: "", category: "" });
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <RefreshCw className="animate-spin text-blue-500" size={32} />
         <span className="ml-2 text-gray-600">Cargando métricas...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 m-4">
+        <div className="flex items-center">
+          <AlertCircle className="text-red-500 mr-3" size={24} />
+          <div>
+            <h3 className="text-red-800 font-semibold">
+              Error al cargar métricas
+            </h3>
+            <p className="text-red-700 mt-1">{error}</p>
+            <button
+              onClick={() => refreshMetrics(apiFilters)}
+              className="mt-3 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Reintentar
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -273,29 +179,37 @@ export default function EventMetricsDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Total de Eventos"
-          value={metricsData?.totalEvents || 0}
+          value={metrics.event?.data?.totalEvents || 0}
           icon={Calendar}
           color="bg-blue-500"
-          trend="+8% vs período anterior"
+          trend={`${
+            metrics.event?.data?.percentageChangeEvents! > 0 ? "+" : ""
+          }${
+            metrics.event?.data?.percentageChangeEvents || 0
+          }% vs período anterior`}
         />
         <MetricCard
           title="Tasa Promedio de Asistencia"
-          value="86.3%"
+          value={`${metrics.event?.data?.averageAttendanceRate || 0}%`}
           icon={UserCheck}
           color="bg-green-500"
           subtitle="Inscritos vs Asistentes"
-          trend="+3.2% vs período anterior"
+          trend={`${
+            metrics.event?.data?.percentageChangeAttendance! > 0 ? "+" : ""
+          }${
+            metrics.event?.data?.percentageChangeAttendance || 0
+          }% vs período anterior`}
         />
         <MetricCard
           title="Índice de Cumplimiento"
-          value={`${metricsData?.complianceIndex}%`}
+          value={`${metrics.event?.data?.complianceIndex || 0}%`}
           icon={Award}
           color="bg-purple-500"
           subtitle="Asistencia efectiva"
         />
         <MetricCard
           title="Ocupación Promedio"
-          value="86.4%"
+          value={`${metrics.event?.data?.averageOccupancy || 0}%`}
           icon={Target}
           color="bg-orange-500"
           subtitle="Capacidad utilizada"
@@ -303,62 +217,81 @@ export default function EventMetricsDashboard() {
       </div>
 
       {/* Eventos más concurridos */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <TrendingUp className="mr-2 text-green-500" size={20} />
-          Eventos Más Concurridos
-        </h3>
-        <div className="space-y-4">
-          {metricsData?.mostPopularEvents.map((event, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-            >
-              <div>
-                <p className="font-medium text-gray-900">{event.name}</p>
-                <p className="text-sm text-gray-600">
-                  {event.attendees} asistentes
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-lg font-bold text-green-600">
-                  {((event.attendees / event.capacity) * 100).toFixed(1)}%
-                </p>
-                <p className="text-xs text-gray-500">ocupación</p>
-              </div>
+      {metrics.event?.data?.topEvents &&
+        metrics.event.data.topEvents.length > 0 && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <TrendingUp className="mr-2 text-green-500" size={20} />
+              Eventos Más Concurridos
+            </h3>
+            <div className="space-y-4">
+              {metrics.event.data.topEvents.map((event, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                >
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {event.eventName}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {event.attendees} asistentes
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-green-600">
+                      {event.occupancyPercentage.toFixed(1)}%
+                    </p>
+                    <p className="text-xs text-gray-500">ocupación</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        )}
 
       {/* Evolución mensual */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <BarChart3 className="mr-2 text-blue-500" size={20} />
-          Evolución de Participación
-        </h3>
-        <div className="space-y-4">
-          {metricsData?.monthlyParticipation.map((item, index) => (
-            <div key={index} className="flex items-center">
-              <span className="text-sm font-medium text-gray-600 w-12">
-                {item.month}
-              </span>
-              <div className="flex-1 mx-4">
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
-                  <span>{item.events} eventos</span>
-                  <span>{item.attendees} asistentes</span>
+      {metrics.event?.data?.monthlyEvolution &&
+        metrics.event.data.monthlyEvolution.length > 0 && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <BarChart3 className="mr-2 text-blue-500" size={20} />
+              Evolución de Participación
+            </h3>
+            <div className="space-y-4">
+              {metrics.event.data.monthlyEvolution.map((item, index) => (
+                <div key={index} className="flex items-center">
+                  <span className="text-sm font-medium text-gray-600 w-12">
+                    {item.month}
+                  </span>
+                  <div className="flex-1 mx-4">
+                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                      <span>{item.events} eventos</span>
+                      <span>{item.attendees} asistentes</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div
+                        className="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            (item.attendees /
+                              Math.max(
+                                ...metrics.event!.data.monthlyEvolution.map(
+                                  (m) => m.attendees
+                                )
+                              )) *
+                              100
+                          )}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full"
-                    style={{ width: `${(item.attendees / 1500) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        )}
     </div>
   );
 
@@ -368,108 +301,119 @@ export default function EventMetricsDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Retención de Usuarios"
-          value={`${metricsData?.userRetention.retentionRate}%`}
+          value={`${metrics.user?.data?.userRetentionRate || 0}%`}
           icon={Repeat}
           color="bg-teal-500"
           subtitle="Asisten a múltiples eventos"
         />
         <MetricCard
           title="Usuarios Activos"
-          value={metricsData?.userRetention.total || 0}
+          value={metrics.user?.data?.activeUsers || 0}
           icon={Users}
           color="bg-indigo-500"
           subtitle="Total de participantes"
         />
         <MetricCard
           title="Promedio de Participación"
-          value="3.2"
+          value={`${metrics.user?.data?.averageParticipation || 0}%`}
           icon={Activity}
           color="bg-pink-500"
-          subtitle="Eventos por usuario"
+          subtitle="Nivel de participación"
         />
         <MetricCard
           title="Usuarios Recurrentes"
-          value={metricsData?.userRetention.multipleEvents || 0}
+          value={metrics.user?.data?.recurrentUsers || 0}
           icon={UserCheck}
           color="bg-green-500"
           subtitle="Más de un evento"
         />
       </div>
 
-      {/* Usuarios más activos */}
+      {/* Usuarios más activos y análisis nuevos vs recurrentes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Award className="mr-2 text-yellow-500" size={20} />
-            Usuarios Más Activos
-          </h3>
-          <div className="space-y-3">
-            {metricsData?.mostActiveUsers.map((user, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-              >
-                <div>
-                  <p className="font-medium text-gray-900">{user.name}</p>
-                  <p className="text-sm text-gray-600">
-                    Último evento: {user.lastEvent}
-                  </p>
-                </div>
-                <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
-                  {user.eventsCount} eventos
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Users className="mr-2 text-blue-500" size={20} />
-            Nuevos vs Recurrentes
-          </h3>
-          <div className="space-y-4">
-            {metricsData?.newVsRecurrent.map((item, index) => (
-              <div key={index}>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    {item.event}
-                  </span>
-                </div>
-                <div className="flex space-x-2">
-                  <div className="flex-1">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span>Nuevos: {item.newUsers}</span>
-                      <span>Recurrentes: {item.recurrentUsers}</span>
+        {/* Usuarios más activos */}
+        {metrics.user?.data?.topUsers &&
+          metrics.user.data.topUsers.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Award className="mr-2 text-yellow-500" size={20} />
+                Usuarios Más Activos
+              </h3>
+              <div className="space-y-3">
+                {metrics.user.data.topUsers.map((user, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {user.userName}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Último evento:{" "}
+                        {new Date(user.lastEventDate).toLocaleDateString()}
+                      </p>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 flex">
-                      <div
-                        className="bg-blue-500 h-2 rounded-l-full"
-                        style={{
-                          width: `${
-                            (item.newUsers /
-                              (item.newUsers + item.recurrentUsers)) *
-                            100
-                          }%`,
-                        }}
-                      ></div>
-                      <div
-                        className="bg-green-500 h-2 rounded-r-full"
-                        style={{
-                          width: `${
-                            (item.recurrentUsers /
-                              (item.newUsers + item.recurrentUsers)) *
-                            100
-                          }%`,
-                        }}
-                      ></div>
+                    <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {user.totalEvents} eventos
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        {/* Nuevos vs Recurrentes */}
+        {metrics.user?.data?.newVsRecurrentByEvent &&
+          metrics.user.data.newVsRecurrentByEvent.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Users className="mr-2 text-blue-500" size={20} />
+                Nuevos vs Recurrentes
+              </h3>
+              <div className="space-y-4">
+                {metrics.user.data.newVsRecurrentByEvent.map((item, index) => (
+                  <div key={index}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium text-gray-700">
+                        {item.eventName}
+                      </span>
+                    </div>
+                    <div className="flex space-x-2">
+                      <div className="flex-1">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>Nuevos: {item.newUsers}</span>
+                          <span>Recurrentes: {item.recurrentUsers}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 flex">
+                          <div
+                            className="bg-blue-500 h-2 rounded-l-full"
+                            style={{
+                              width: `${
+                                (item.newUsers /
+                                  (item.newUsers + item.recurrentUsers)) *
+                                100
+                              }%`,
+                            }}
+                          ></div>
+                          <div
+                            className="bg-green-500 h-2 rounded-r-full"
+                            style={{
+                              width: `${
+                                (item.recurrentUsers /
+                                  (item.newUsers + item.recurrentUsers)) *
+                                100
+                              }%`,
+                            }}
+                          ></div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          )}
       </div>
     </div>
   );
@@ -477,107 +421,140 @@ export default function EventMetricsDashboard() {
   const renderAcademicMetrics = () => (
     <div className="space-y-6">
       {/* Distribución por facultad */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <BookOpen className="mr-2 text-blue-500" size={20} />
-          Distribución por Facultad
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {metricsData?.facultyDistribution.map((faculty, index) => (
-            <div key={index} className="p-4 bg-gray-50 rounded-lg">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-medium text-gray-900">
-                  {faculty.faculty}
-                </span>
-                <span className="text-sm text-gray-600">
-                  {faculty.count} estudiantes
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-500 h-2 rounded-full"
-                  style={{ width: `${faculty.percentage}%` }}
-                ></div>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {faculty.percentage}% del total
-              </p>
+      {metrics.academic?.data?.facultyDistribution &&
+        metrics.academic.data.facultyDistribution.length > 0 && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <BookOpen className="mr-2 text-blue-500" size={20} />
+              Distribución por Facultad
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {metrics.academic.data.facultyDistribution.map(
+                (faculty, index) => (
+                  <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-medium text-gray-900">
+                        {faculty.facultyName}
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        {faculty.students} estudiantes
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-500 h-2 rounded-full"
+                        style={{ width: `${faculty.percentage}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {faculty.percentage}% del total
+                    </p>
+                  </div>
+                )
+              )}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        )}
 
-      {/* Promedio por tipo de evento */}
+      {/* Asistencia por tipo de evento y tendencias por horario */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Calendar className="mr-2 text-green-500" size={20} />
-            Asistencia por Tipo de Evento
-          </h3>
-          <div className="space-y-4">
-            {metricsData?.avgAttendanceByEventType.map((type, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900">{type.type}</p>
-                  <p className="text-sm text-gray-600">
-                    {type.totalEvents} eventos
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-green-600">
-                    {type.avgAttendance}
-                  </p>
-                  <p className="text-xs text-gray-500">promedio</p>
-                </div>
+        {/* Asistencia por tipo de evento */}
+        {metrics.academic?.data?.attendanceByEventType &&
+          metrics.academic.data.attendanceByEventType.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Calendar className="mr-2 text-green-500" size={20} />
+                Asistencia por Tipo de Evento
+              </h3>
+              <div className="space-y-4">
+                {metrics.academic.data.attendanceByEventType.map(
+                  (type, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {type.eventType}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {type.totalEvents} eventos
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-green-600">
+                          {type.averageAttendance}
+                        </p>
+                        <p className="text-xs text-gray-500">promedio</p>
+                      </div>
+                    </div>
+                  )
+                )}
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Clock className="mr-2 text-purple-500" size={20} />
-            Tendencias por Horario
-          </h3>
-          <div className="space-y-4">
-            {metricsData?.timeSlotTrends.map((slot, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900">{slot.timeSlot}</p>
-                  <p className="text-sm text-gray-600">
-                    {slot.eventCount} eventos
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-purple-600">
-                    {slot.avgAttendance}
-                  </p>
-                  <p className="text-xs text-gray-500">promedio</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Tendencias por día */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <BarChart3 className="mr-2 text-orange-500" size={20} />
-          Participación por Día de la Semana
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {metricsData?.dayTrends.map((day, index) => (
-            <div key={index} className="p-4 bg-gray-50 rounded-lg text-center">
-              <p className="font-medium text-gray-900">{day.day}</p>
-              <p className="text-2xl font-bold text-orange-600 my-2">
-                {day.avgAttendance}
-              </p>
-              <p className="text-xs text-gray-500">{day.eventCount} eventos</p>
             </div>
-          ))}
-        </div>
+          )}
+
+        {/* Tendencias por horario */}
+        {metrics.academic?.data?.timeSlotTrends &&
+          metrics.academic.data.timeSlotTrends.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Clock className="mr-2 text-purple-500" size={20} />
+                Tendencias por Horario
+              </h3>
+              <div className="space-y-4">
+                {metrics.academic.data.timeSlotTrends.map((slot, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {slot.timeSlot}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {slot.events} eventos
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-purple-600">
+                        {slot.averageAttendance}
+                      </p>
+                      <p className="text-xs text-gray-500">promedio</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
       </div>
+
+      {/* Participación por día de la semana */}
+      {metrics.academic?.data?.weeklyParticipation &&
+        metrics.academic.data.weeklyParticipation.length > 0 && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <BarChart3 className="mr-2 text-orange-500" size={20} />
+              Participación por Día de la Semana
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+              {metrics.academic.data.weeklyParticipation.map((day, index) => (
+                <div
+                  key={index}
+                  className="p-4 bg-gray-50 rounded-lg text-center"
+                >
+                  <p className="font-medium text-gray-900">{day.dayOfWeek}</p>
+                  <p className="text-2xl font-bold text-orange-600 my-2">
+                    {day.averageAttendance}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {day.totalEvents} eventos
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
     </div>
   );
 
@@ -648,12 +625,15 @@ export default function EventMetricsDashboard() {
                   faculty: e.target.value,
                 })
               }
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+              disabled={loadingFilterOptions}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
             >
-              <option value="">Todas las facultades</option>
+              <option value="">
+                {loadingFilterOptions ? "Cargando..." : "Todas las facultades"}
+              </option>
               {facultyOptions.map((faculty) => (
-                <option key={faculty} value={faculty}>
-                  {faculty}
+                <option key={faculty.id} value={faculty.id}>
+                  {faculty.name}
                 </option>
               ))}
             </select>
@@ -666,12 +646,15 @@ export default function EventMetricsDashboard() {
                   eventType: e.target.value,
                 })
               }
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+              disabled={loadingFilterOptions}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
             >
-              <option value="">Todos los tipos</option>
+              <option value="">
+                {loadingFilterOptions ? "Cargando..." : "Todos los tipos"}
+              </option>
               {eventTypeOptions.map((type) => (
-                <option key={type} value={type}>
-                  {type}
+                <option key={type.id} value={type.id}>
+                  {type.name}
                 </option>
               ))}
             </select>
@@ -684,12 +667,15 @@ export default function EventMetricsDashboard() {
                   category: e.target.value,
                 })
               }
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+              disabled={loadingFilterOptions}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
             >
-              <option value="">Todas las categorías</option>
+              <option value="">
+                {loadingFilterOptions ? "Cargando..." : "Todas las categorías"}
+              </option>
               {categoryOptions.map((category) => (
-                <option key={category} value={category}>
-                  {category}
+                <option key={category.id} value={category.id}>
+                  {category.name}
                 </option>
               ))}
             </select>
@@ -704,7 +690,6 @@ export default function EventMetricsDashboard() {
           </div>
         </div>
       )}
-
       {/* Pestañas de navegación */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         <div className="border-b border-gray-200">

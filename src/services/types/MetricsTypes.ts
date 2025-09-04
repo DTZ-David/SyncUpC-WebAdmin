@@ -1,107 +1,104 @@
-// src/types/MetricsTypes.ts
+// src/types/metrics.ts
 
-export interface MetricsRequest {
-  dateRange: "lastMonth" | "last3months" | "last6months" | "lastYear";
-  startDate?: string;
-  endDate?: string;
+// Filtros opcionales para todas las métricas
+export interface MetricsFilters {
+  dateFrom?: string;
+  dateTo?: string;
+  faculty?: string;
+  program?: string;
+  eventType?: string;
+  category?: string;
 }
 
-export interface TopFaculty {
-  name: string;
-  eventCount: number;
-  percentage: number;
-  attendeeCount: number;
-}
-
-export interface TopCareer {
-  name: string;
-  eventCount: number;
-  percentage: number;
-  attendeeCount: number;
-  facultyName: string;
-}
-
-export interface TopLocation {
-  name: string;
-  eventCount: number;
-  percentage: number;
-  attendeeCount: number;
-}
-
-export interface MonthlyTrend {
-  month: string;
-  year: number;
-  events: number;
-  attendees: number;
-  averageAttendance: number;
-}
-
-export interface EventTypeDistribution {
-  type: string;
-  count: number;
-  percentage: number;
-  averageAttendees: number;
-}
-
-export interface HourlyAttendance {
-  hour: string;
-  eventCount: number;
-  attendeeCount: number;
-  averageAttendance: number;
-}
-
-export interface AttendanceStats {
-  totalRegistered: number;
-  totalAttended: number;
-  attendanceRate: number;
-  noShowRate: number;
-}
-
-export interface MetricsData {
-  // Métricas principales
-  totalEvents: number;
-  totalAttendees: number;
-  totalRegistrations: number;
-  averageAttendeesPerEvent: number;
-  attendanceStats: AttendanceStats;
-
-  // Top performers
-  topFaculties: TopFaculty[];
-  topCareers: TopCareer[];
-  topLocations: TopLocation[];
-
-  // Tendencias y distribuciones
-  monthlyTrend: MonthlyTrend[];
-  eventTypeDistribution: EventTypeDistribution[];
-  hourlyAttendance: HourlyAttendance[];
-
-  // Métricas adicionales
-  peakAttendanceHour: string;
-  averageEventDuration: number;
-  mostPopularDay: string;
-  averageEventsPerMonth: number;
-  growthRate: number;
-
-  // Datos para comparación
-  previousPeriodComparison: {
-    eventsGrowth: number;
-    attendeesGrowth: number;
-    attendanceRateChange: number;
-  };
-}
-
-export interface MetricsResponse {
+// Respuesta base de la API
+export interface ApiResponse<T> {
   statusCode: number;
   isSuccess: boolean;
-  data: MetricsData;
+  data: T;
   message: string;
   errors: string[];
 }
 
-// Tipos para exportación
-export interface ExportRequest {
-  dateRange: string;
-  format: "pdf" | "excel";
-  includeCharts?: boolean;
-  includeDetails?: boolean;
+// --- ACADEMIC METRICS ---
+export interface FacultyDistribution {
+  facultyName: string;
+  students: number;
+  percentage: number;
 }
+
+export interface AttendanceByEventType {
+  eventType: string;
+  totalEvents: number;
+  averageAttendance: number;
+}
+
+export interface TimeSlotTrends {
+  timeSlot: string;
+  events: number;
+  averageAttendance: number;
+}
+
+export interface WeeklyParticipation {
+  dayOfWeek: string;
+  averageAttendance: number;
+  totalEvents: number;
+}
+
+export interface AcademicMetricsData {
+  facultyDistribution: FacultyDistribution[];
+  attendanceByEventType: AttendanceByEventType[];
+  timeSlotTrends: TimeSlotTrends[];
+  weeklyParticipation: WeeklyParticipation[];
+}
+
+export type AcademicMetricsResponse = ApiResponse<AcademicMetricsData>;
+
+// --- USER METRICS ---
+export interface TopUser {
+  userName: string;
+  lastEventDate: string;
+  totalEvents: number;
+}
+
+export interface NewVsRecurrentByEvent {
+  eventName: string;
+  newUsers: number;
+  recurrentUsers: number;
+}
+
+export interface UserMetricsData {
+  userRetentionRate: number;
+  activeUsers: number;
+  averageParticipation: number;
+  recurrentUsers: number;
+  topUsers: TopUser[];
+  newVsRecurrentByEvent: NewVsRecurrentByEvent[];
+}
+
+export type UserMetricsResponse = ApiResponse<UserMetricsData>;
+
+// --- EVENT METRICS ---
+export interface TopEvent {
+  eventName: string;
+  attendees: number;
+  occupancyPercentage: number;
+}
+
+export interface MonthlyEvolution {
+  month: string;
+  events: number;
+  attendees: number;
+}
+
+export interface EventMetricsData {
+  totalEvents: number;
+  percentageChangeEvents: number;
+  averageAttendanceRate: number;
+  percentageChangeAttendance: number;
+  complianceIndex: number;
+  averageOccupancy: number;
+  topEvents: TopEvent[];
+  monthlyEvolution: MonthlyEvolution[];
+}
+
+export type EventMetricsResponse = ApiResponse<EventMetricsData>;

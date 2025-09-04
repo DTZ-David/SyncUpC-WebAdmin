@@ -35,4 +35,10 @@ export const ENDPOINTS = {
   ATTENDANCE: {
     GET_LIST: "/attendance/attendancelist",
   },
+  // Nuevos endpoints de métricas
+  METRICS: {
+    GET_ACADEMIC: "/metrics/getacademicmetrics",
+    GET_USER: "/metrics/getusermetrics",
+    GET_EVENT: "/metrics/geteventmetrics",
+  },
 };
