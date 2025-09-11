@@ -23,7 +23,9 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
 }) => (
   <div className="space-y-6">
     <div className="text-center mb-6">
-      <h3 className="text-xl font-semibold text-gray-900">Configuración</h3>
+      <h3 className="text-xl font-semibold text-gray-900">
+        Imagenes de eventos
+      </h3>
       <p className="text-gray-600">
         Personaliza tus preferencias de notificación
       </p>

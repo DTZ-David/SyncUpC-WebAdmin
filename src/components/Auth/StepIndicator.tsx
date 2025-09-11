@@ -14,7 +14,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({
   const steps = [
     { number: 1, title: "Datos Personales" },
     { number: 2, title: "Información Profesional" },
-    { number: 3, title: "Configuración" },
+    { number: 3, title: "Imagenes de eventos" },
   ];
 
   return (

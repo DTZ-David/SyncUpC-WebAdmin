@@ -41,4 +41,10 @@ export const ENDPOINTS = {
     GET_USER: "/metrics/getusermetrics",
     GET_EVENT: "/metrics/geteventmetrics",
   },
+  // NUEVO: Endpoints para imágenes de eventos
+  EVENT_IMAGES: {
+    GET_MY_IMAGES: "/eventimages/getmyeventimages",
+    ADD_IMAGES: "/eventimages/addeventimages",
+    DELETE_IMAGES: "/eventimages/deleteeventimages",
+  },
 };

@@ -26,7 +26,7 @@ export default function Sidebar({
     { id: "events", label: "Eventos", icon: Calendar },
     { id: "attendees", label: "Asistentes", icon: Users },
     { id: "metrics", label: "Metricas", icon: UserPlus },
-    { id: "settings", label: "Configuración", icon: Settings },
+    { id: "settings", label: "Gestión de imagenes", icon: Settings },
   ];
 
   const handleMenuClick = (id: string) => {

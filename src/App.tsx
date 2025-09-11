@@ -11,6 +11,7 @@ import Metrics from "./components/Metrics/Metric";
 import EventDetails from "./components/Events/ui/EventDetails";
 import { authService } from "./services/api/authService";
 import { eventService } from "./services/api/eventService";
+import EventImagesManager from "./components/EventImages/EventImagesManager";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -167,23 +168,7 @@ function App() {
       case "metrics":
         return <Metrics />;
       case "settings":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Configuración
-              </h1>
-              <p className="text-gray-600">
-                Gestiona la configuración de tu aplicación
-              </p>
-            </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-              <p className="text-gray-600">
-                Panel de configuración próximamente...
-              </p>
-            </div>
-          </div>
-        );
+        return <EventImagesManager />;
       default:
         return (
           <Dashboard
