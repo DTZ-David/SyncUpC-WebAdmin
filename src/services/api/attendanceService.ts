@@ -73,19 +73,21 @@ class AttendanceService {
       return [];
     }
 
-    return userAttendances.map((attendance) => {
+    return userAttendances.map((attendance: any) => {
+      // Manejar los nuevos nombres de campos del backend
+      const isTeacher = !attendance.carrera && !attendance.facultad;
+
       return {
-        nombre: attendance.nombre,
-        apellido: attendance.apellido,
-        numero: attendance.numero,
+        nombre: attendance.name || attendance.nombre || "N/A",
+        apellido: attendance.lastName || attendance.apellido || "N/A",
+        numero: attendance.phoneNumber || attendance.numero || "N/A",
+        email: attendance.email || "N/A",
         checkInTime: this.formatTime(attendance.checkInTime),
+        carrera: attendance.carrera || (isTeacher ? "Docente" : "N/A"),
+        facultad: attendance.facultad || (isTeacher ? "Docente" : "N/A"),
       };
     });
   }
-
-  /**
-   * Calcula la duración entre check-in y check-out
-   */
 
   /**
    * Formatea la hora para mostrar
@@ -213,7 +215,7 @@ class AttendanceService {
   }
 
   /**
-   * Genera contenido CSV
+   * Genera contenido CSV con todos los campos
    */
   private generateCSVContent(
     data: ProcessedAttendance[],
@@ -223,22 +225,26 @@ class AttendanceService {
       "Nombre",
       "Apellido",
       "Número",
+      "Email",
+      "Carrera",
+      "Facultad",
       "Hora Entrada",
-      "Hora Salida",
-      "Duración",
-      "Estado",
     ];
 
     const csvRows = [
       `Reporte de Asistencia - ${eventTitle}`,
       `Generado el: ${new Date().toLocaleString("es-CO")}`,
+      `Total de asistentes: ${data.length}`,
       "", // Línea en blanco
       headers.join(","),
       ...data.map((row) =>
         [
           `"${row.nombre}"`,
           `"${row.apellido}"`,
-          row.numero,
+          `"${row.numero}"`,
+          `"${row.email}"`,
+          `"${row.carrera}"`,
+          `"${row.facultad}"`,
           `"${row.checkInTime}"`,
         ].join(",")
       ),
@@ -248,10 +254,7 @@ class AttendanceService {
   }
 
   /**
-   * Genera contenido HTML para PDF con logos institucionales
-   */
-  /**
-   * Genera contenido HTML para PDF con diseño profesional y sobrio
+   * Genera contenido HTML para PDF con diseño profesional incluyendo los nuevos campos
    */
   private generateHTMLContent(
     data: ProcessedAttendance[],
@@ -261,9 +264,10 @@ class AttendanceService {
       .map(
         (row) => `
     <tr>
-      <td>${row.nombre}</td>
-      <td>${row.apellido}</td>
+      <td>${row.nombre + " " + row.apellido}</td>
       <td>${row.numero}</td>
+      <td>${row.email}</td>
+      <td>${row.carrera}</td>
       <td>${row.checkInTime}</td>
     </tr>
   `
@@ -285,10 +289,11 @@ class AttendanceService {
 
           body { 
             font-family: 'Times New Roman', serif;
-            margin: 40px; 
-            line-height: 1.5;
+            margin: 20px; 
+            line-height: 1.4;
             color: #000;
             background-color: #fff;
+            font-size: 12px;
           }
 
           /* Header institucional */
@@ -296,131 +301,152 @@ class AttendanceService {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
             border-bottom: 2px solid #000;
           }
 
           .logo-left {
-            width: 80px;
+            width: 70px;
             text-align: center;
           }
 
           .logo-right {
-            width: 80px;
+            width: 70px;
             text-align: center;
           }
 
           .logo-img {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             object-fit: contain;
             margin-bottom: 5px;
           }
 
           .logo-text {
-            font-size: 9px;
+            font-size: 8px;
             color: #333;
             font-weight: bold;
             text-align: center;
-            line-height: 1.2;
+            line-height: 1.1;
           }
 
           /* Contenido central */
           .header-content {
             flex: 1;
             text-align: center;
-            margin: 0 30px;
+            margin: 0 20px;
           }
 
           .institution-name {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #000;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             text-transform: uppercase;
           }
 
           .program-name {
-            font-size: 12px;
+            font-size: 11px;
             color: #000;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
           }
 
           .report-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: #000;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             text-transform: uppercase;
           }
 
           .event-title {
-            font-size: 14px;
+            font-size: 13px;
             color: #000;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             font-style: italic;
           }
 
           .generation-date {
-            font-size: 11px;
+            font-size: 10px;
             color: #666;
           }
 
           /* Información básica del evento */
           .event-summary {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             text-align: center;
           }
 
           .summary-text {
-            font-size: 12px;
+            font-size: 11px;
             color: #333;
             margin-bottom: 5px;
           }
 
-          /* Tabla */
+          /* Tabla con diseño más compacto */
           table { 
             width: 100%; 
             border-collapse: collapse;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
+            font-size: 10px;
           }
 
           th { 
             background-color: #f5f5f5;
             color: #000; 
-            padding: 12px 8px; 
+            padding: 8px 4px; 
             text-align: left; 
             font-weight: bold;
-            font-size: 12px;
+            font-size: 10px;
             border: 1px solid #333;
             text-transform: uppercase;
           }
 
           td {
-            padding: 10px 8px;
+            padding: 6px 4px;
             border: 1px solid #333;
-            font-size: 11px;
+            font-size: 9px;
+            word-wrap: break-word;
+            max-width: 120px;
           }
 
           tbody tr:nth-child(even) {
             background-color: #fafafa;
           }
 
+          /* Columnas específicas */
+          th:nth-child(4), td:nth-child(4) { /* Email */
+            min-width: 140px;
+          }
+
+          th:nth-child(5), td:nth-child(5) { /* Carrera */
+            min-width: 120px;
+          }
+
+          th:nth-child(6), td:nth-child(6) { /* Facultad */
+            min-width: 100px;
+          }
+
+          th:nth-child(7), td:nth-child(7) { /* Hora */
+            min-width: 110px;
+          }
+
           /* Footer */
           .footer {
-            margin-top: 50px;
+            margin-top: 40px;
             text-align: center;
-            font-size: 10px;
+            font-size: 9px;
             color: #666;
             border-top: 1px solid #ccc;
-            padding-top: 20px;
+            padding-top: 15px;
           }
 
           /* Estilos de impresión */
           @media print {
             body { 
-              margin: 20px;
+              margin: 15px;
+              font-size: 11px;
             }
             
             .header { 
@@ -428,18 +454,41 @@ class AttendanceService {
             }
             
             table { 
-              break-inside: auto; 
+              break-inside: auto;
+              font-size: 9px;
             }
             
             tr { 
               break-inside: avoid; 
               break-after: auto; 
             }
+
+            th, td {
+              padding: 4px 2px;
+            }
+          }
+
+          /* Responsive para pantallas pequeñas */
+          @media screen and (max-width: 1200px) {
+            table {
+              font-size: 10px;
+            }
+            
+            th, td {
+              padding: 6px 3px;
+            }
+
+            /* Mantener proporciones */
+            th:nth-child(1), td:nth-child(1) { width: 25%; }
+            th:nth-child(2), td:nth-child(2) { width: 15%; }
+            th:nth-child(3), td:nth-child(3) { width: 30%; }
+            th:nth-child(4), td:nth-child(4) { width: 15%; }
+            th:nth-child(5), td:nth-child(5) { width: 15%; }
           }
         </style>
       </head>
       <body>
-        <!-- Header institucional simple -->
+        <!-- Header institucional -->
         <div class="header">
           <div class="logo-left">
             <img src="/upcLogo.png" alt="UPC Logo" class="logo-img" />
@@ -476,13 +525,14 @@ class AttendanceService {
           }</strong></div>
         </div>
         
-        <!-- Tabla de asistencia -->
+        <!-- Tabla de asistencia con campos simplificados -->
         <table>
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Apellido</th>
+              <th>Nombre Completo</th>
               <th>Número</th>
+              <th>Email</th>
+              <th>Carrera</th>
               <th>Hora de Entrada</th>
             </tr>
           </thead>

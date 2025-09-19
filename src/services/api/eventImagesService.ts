@@ -4,6 +4,7 @@ import {
   AddEventImagesRequest,
   DeleteEventImagesRequest,
   ApiResponse,
+  EventImage,
 } from "../types/EventImagesTypes";
 import { apiClient } from "./apiClient";
 

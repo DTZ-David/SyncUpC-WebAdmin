@@ -1,16 +1,19 @@
 // src/types/AttendanceTypes.ts
 
 export interface UserAttendance {
-  nombre: string;
-  apellido: string;
-  numero: string;
+  name: string; // Cambió de 'nombre' a 'name'
+  lastName: string; // Cambió de 'apellido' a 'lastName'
+  email: string;
+  phoneNumber: string; // Cambió de 'numero' a 'phoneNumber'
   checkInTime: string;
+  carrera?: string; // Opcional para docentes
+  facultad?: string; // Opcional para docentes
 }
 
 export interface AttendanceData {
   creationDate: string;
   eventId: string;
-  userAttendanceDto: UserAttendance[]; // Corregido: sin la "e" extra
+  userAttendanceDto: UserAttendance[];
 }
 
 export interface AttendanceResponse {
@@ -29,6 +32,9 @@ export interface AttendanceRequest {
 export interface ProcessedAttendance {
   nombre: string;
   apellido: string;
+  email: string;
   numero: string;
   checkInTime: string;
+  carrera: string;
+  facultad: string;
 }
