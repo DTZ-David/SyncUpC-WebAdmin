@@ -43,32 +43,84 @@ export class AuthService {
    * @param credentials - Email y contraseña del usuario
    * @returns Promise con la respuesta del servidor
    */
-  async login(credentials: LoginRequest): Promise<LoginResponse> {
-    try {
-      console.log("Attempting login with:", { email: credentials.email });
+ async login(credentials: LoginRequest): Promise<LoginResponse> {
+  try {
+    console.log("Attempting login with:", { email: credentials.email });
 
-      // ← CORREGIDO: Login SIN autorización (requireAuth: false)
-      const response = await apiClient.post<LoginResponse>(
-        "/user/loginapp",
-        credentials,
-        undefined, // headers
-        false // requireAuth = false ← ESTO ES CLAVE
-      );
+    // Login SIN autorización (requireAuth: false)
+    const response = await apiClient.post<LoginResponse>(
+      "/user/loginapp",
+      credentials,
+      undefined, // headers
+      false // requireAuth = false
+    );
 
-      console.log("Login response:", response);
+    console.log("Login response:", response);
 
-      // Si el login es exitoso, guardar tokens y datos del usuario
-      if (response.isSuccess && response.data) {
-        this.saveAuthData(response.data, credentials.email);
-        apiClient.setAuthToken(response.data.token);
+    // Verificar si el login fue exitoso
+    if (response.isSuccess && response.data) {
+      // 🔒 VALIDACIÓN DE ROL - Rechazar estudiantes
+      const userRole = response.data.role?.toLowerCase();
+      
+      if (userRole === 'student' || userRole === 'estudiante') {
+        console.warn("Access denied: Student role not allowed in web platform");
+        
+        // Limpiar cualquier dato que se haya guardado
+        this.clearAuthData();
+        
+        // Lanzar error específico para estudiantes
+        throw new Error("Acceso denegado: Los estudiantes deben usar la aplicación móvil");
       }
 
-      return response;
-    } catch (error) {
-      console.error("Login error:", error);
+      // 🔒 Solo permitir roles autorizados (staff, admin, etc.)
+      const allowedRoles = ['staffmember', 'admin', 'administrator', 'staff'];
+      const isAuthorizedRole = allowedRoles.includes(userRole || '');
+      
+      if (!isAuthorizedRole) {
+        console.warn("Access denied: Unauthorized role:", userRole);
+        
+        this.clearAuthData();
+        throw new Error("Acceso denegado: Tu rol no tiene permisos para acceder a la plataforma web");
+      }
+
+      console.log("✅ Role validation passed:", userRole);
+      
+      // Si la validación pasa, guardar tokens y datos del usuario
+      this.saveAuthData(response.data, credentials.email);
+      apiClient.setAuthToken(response.data.token);
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Login error:", error);
+    
+    // Si es nuestro error de rol, mantener el mensaje específico
+    if (error instanceof Error && error.message.includes("Acceso denegado")) {
       throw error;
     }
+    
+    // Para otros errores, usar mensaje genérico
+    throw error;
   }
+}
+
+// 🔒 Método auxiliar para limpiar datos de auth
+private clearAuthData(): void {
+  try {
+    // Limpiar localStorage
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userData');
+    
+    // Limpiar token del apiClient
+    apiClient.removeAuthToken();
+    
+    console.log("Auth data cleared");
+  } catch (error) {
+    console.warn("Error clearing auth data:", error);
+  }
+}
 
   /**
    * Cierra la sesión del usuario

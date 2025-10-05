@@ -12,6 +12,8 @@ import EventDetails from "./components/Events/ui/EventDetails";
 import { authService } from "./services/api/authService";
 import { eventService } from "./services/api/eventService";
 import EventImagesManager from "./components/EventImages/EventImagesManager";
+import AlertModal from "./components/shared/AlertModal";
+import ConfirmModal from "./components/shared/ConfirmModal";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -26,6 +28,33 @@ function App() {
   >(null);
   const [viewingEventDetails, setViewingEventDetails] = useState<any>(null);
 
+  // Estados para los modales
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "info" | "success" | "warning" | "error";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
+
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "warning" | "error" | "info";
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "warning",
+    onConfirm: () => {},
+  });
+
   const handleLogin = async (email: string, password: string) => {
     try {
       const response = await authService.login({ email, password });
@@ -38,11 +67,21 @@ function App() {
           setIsAuthenticated(true);
         }
       } else {
-        alert(response.message || "Credenciales inválidas");
+        setAlertModal({
+          isOpen: true,
+          title: "Error de Autenticación",
+          message: response.message || "Credenciales inválidas",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("Error en login:", error);
-      alert("Error al iniciar sesión");
+      setAlertModal({
+        isOpen: true,
+        title: "Error de Conexión",
+        message: "No se pudo conectar con el servidor. Por favor, intenta nuevamente.",
+        type: "error",
+      });
     }
   };
 
@@ -97,24 +136,40 @@ function App() {
     setViewingEventDetails(null);
   };
 
-  const handleDeleteEvent = async (eventId: string) => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar este evento?")) {
-      try {
-        const response = await eventService.deleteEvent(eventId);
+  const handleDeleteEvent = (eventId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Confirmar Eliminación",
+      message: "¿Estás seguro de que quieres eliminar este evento? Esta acción no se puede deshacer.",
+      type: "error",
+      onConfirm: async () => {
+        try {
+          const response = await eventService.deleteEvent(eventId);
 
-        if (response.isSuccess) {
-          alert("Evento eliminado correctamente");
-          // Volver a la lista de eventos después de eliminar
-          setViewingEventDetails(null);
-          setActiveTab("events");
-        } else {
-          throw new Error(response.message || "Error al eliminar el evento");
+          if (response.isSuccess) {
+            setAlertModal({
+              isOpen: true,
+              title: "Evento Eliminado",
+              message: "El evento ha sido eliminado correctamente",
+              type: "success",
+            });
+            // Volver a la lista de eventos después de eliminar
+            setViewingEventDetails(null);
+            setActiveTab("events");
+          } else {
+            throw new Error(response.message || "Error al eliminar el evento");
+          }
+        } catch (error: any) {
+          console.error("Error deleting event:", error);
+          setAlertModal({
+            isOpen: true,
+            title: "Error al Eliminar",
+            message: error.message || "No se pudo eliminar el evento. Intenta nuevamente.",
+            type: "error",
+          });
         }
-      } catch (error: any) {
-        console.error("Error deleting event:", error);
-        alert(error.message || "Error al eliminar el evento");
-      }
-    }
+      },
+    });
   };
 
   if (!isAuthenticated) {
@@ -170,13 +225,7 @@ function App() {
       case "settings":
         return <EventImagesManager />;
       default:
-        return (
-          <Dashboard
-            onViewEventDetails={function (): void {
-              throw new Error("Function not implemented.");
-            }}
-          />
-        );
+        return <Dashboard onViewEventDetails={handleViewEventDetails} />;
     }
   };
 
@@ -198,6 +247,24 @@ function App() {
         isOpen={showEventForm}
         onClose={handleCloseEventForm}
         event={editingEvent}
+      />
+
+      {/* Modales */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
       />
     </div>
   );

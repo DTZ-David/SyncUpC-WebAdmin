@@ -12,6 +12,60 @@ export interface Step {
   validation?: (formData: any) => boolean;
 }
 
+// Funciones de validación mejoradas
+const validateBasicInfo = (formData: any): boolean => {
+  const title = formData.eventTitle?.trim() || "";
+  const objective = formData.eventObjective?.trim() || "";
+
+  return (
+    title.length >= 5 &&
+    title.length <= 200 &&
+    objective.length >= 10 &&
+    objective.length <= 1000
+  );
+};
+
+const validateDateTimeLocation = (formData: any): boolean => {
+  const hasStartDate = formData.startDate !== "";
+  const hasStartTime = formData.startTime !== "";
+
+  // Validar ubicación
+  let locationValid = true;
+  if (!formData.isVirtual) {
+    locationValid = formData.campusId !== "" && formData.spaceId !== "";
+  } else {
+    locationValid = formData.meetingUrl?.trim() !== "";
+  }
+
+  // Validar fechas de registro si requiere registro
+  let registrationValid = true;
+  if (formData.requiresRegistration) {
+    registrationValid =
+      formData.registrationStart !== "" &&
+      formData.registrationStartTime !== "" &&
+      formData.registrationEnd !== "" &&
+      formData.registrationEndTime !== "";
+  }
+
+  // Validar capacidad si se proporciona
+  let capacityValid = true;
+  if (formData.maxCapacity?.trim()) {
+    const capacity = parseInt(formData.maxCapacity);
+    capacityValid = !isNaN(capacity) && capacity > 0 && capacity <= 10000;
+  }
+
+  return hasStartDate && hasStartTime && locationValid && registrationValid && capacityValid;
+};
+
+const validateAudience = (formData: any): boolean => {
+  return (
+    formData.targetTeachers ||
+    formData.targetStudents ||
+    formData.targetAdministrative ||
+    formData.targetGeneral
+  );
+};
+
 export const FORM_STEPS: Step[] = [
   {
     id: "basic",
@@ -19,9 +73,7 @@ export const FORM_STEPS: Step[] = [
     icon: "📝",
     description: "Título, objetivo y detalles principales del evento",
     component: BasicInfoStep,
-    validation: (formData) =>
-      formData.eventTitle.trim() !== "" &&
-      formData.eventObjective.trim() !== "",
+    validation: validateBasicInfo,
   },
   {
     id: "datetime",
@@ -29,8 +81,7 @@ export const FORM_STEPS: Step[] = [
     icon: "📅",
     description: "Cuándo y dónde se realizará el evento",
     component: DateTimeLocationStep,
-    validation: (formData) =>
-      formData.startDate !== "" && formData.startTime !== "",
+    validation: validateDateTimeLocation,
   },
   {
     id: "audience",
@@ -38,11 +89,7 @@ export const FORM_STEPS: Step[] = [
     icon: "👥",
     description: "A quién está dirigido y configuraciones especiales",
     component: AudienceConfigStep,
-    validation: (formData) =>
-      formData.targetTeachers ||
-      formData.targetStudents ||
-      formData.targetAdministrative ||
-      formData.targetGeneral,
+    validation: validateAudience,
   },
   {
     id: "details",

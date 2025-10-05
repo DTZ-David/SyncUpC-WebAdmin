@@ -24,6 +24,10 @@ export default function LoginForm({
   });
   const [showPassword, setShowPassword] = useState(false);
   const [animationComplete, setAnimationComplete] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
 
   const { login, isLoading, error, success, user, clearError } = useAuth();
 
@@ -50,10 +54,57 @@ export default function LoginForm({
     }
   }, [success, user]);
 
+  // Funciones de validación
+  const validateEmail = (email: string): string | null => {
+    if (!email.trim()) {
+      return "El correo electrónico es requerido";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "El formato del correo electrónico no es válido";
+    }
+
+    // if (!email.toLowerCase().endsWith("@unicesar.edu.co")) {
+    //   return "Debe usar un correo institucional @unicesar.edu.co";
+    // }
+
+    return null;
+  };
+
+  const validatePassword = (password: string): string | null => {
+    if (!password) {
+      return "La contraseña es requerida";
+    }
+
+    if (password.length < 8) {
+      return "La contraseña debe tener al menos 8 caracteres";
+    }
+
+    return null;
+  };
+
+  const validateForm = (): boolean => {
+    const errors: { email?: string; password?: string } = {};
+
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      errors.email = emailError;
+    }
+
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      errors.password = passwordError;
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.password) {
+    if (!validateForm()) {
       return;
     }
 
@@ -64,10 +115,19 @@ export default function LoginForm({
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+
+    // Limpiar error de validación cuando el usuario escribe
+    if (validationErrors[name as keyof typeof validationErrors]) {
+      setValidationErrors({
+        ...validationErrors,
+        [name]: undefined,
+      });
+    }
   };
 
   // Mostrar mensaje de éxito
@@ -175,14 +235,22 @@ export default function LoginForm({
                   <input
                     type="email"
                     name="email"
-                    required
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                    placeholder="Ingresa tu correo"
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${
+                      validationErrors.email
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                    placeholder="tu.correo@unicesar.edu.co"
                     disabled={isLoading}
                   />
                 </div>
+                {validationErrors.email && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {validationErrors.email}
+                  </p>
+                )}
               </div>
 
               {/* Password Field */}
@@ -198,10 +266,13 @@ export default function LoginForm({
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
-                    required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${
+                      validationErrors.password
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                     placeholder="Ingresa tu contraseña"
                     disabled={isLoading}
                   />
@@ -214,6 +285,11 @@ export default function LoginForm({
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
+                {validationErrors.password && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {validationErrors.password}
+                  </p>
+                )}
               </div>
 
               {/* Forgot Password */}
