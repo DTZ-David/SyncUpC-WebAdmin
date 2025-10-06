@@ -56,13 +56,19 @@ export class StaffService {
     staffData: RegisterStaffRequest
   ): Promise<RegisterStaffResponse> {
     try {
+      console.log("Sending staff data to backend:", JSON.stringify(staffData, null, 2));
+
       const response = await apiClient.post<RegisterStaffResponse>(
         "/user/registerstaffmember",
-        staffData
+        staffData,
+        undefined, // headers
+        false // requireAuth = false (registro es público)
       );
 
+      console.log("Registration successful:", response);
       return response;
     } catch (error) {
+      console.error("Registration failed:", error);
       // Re-lanzamos el error para que pueda ser manejado en el componente
       throw error;
     }

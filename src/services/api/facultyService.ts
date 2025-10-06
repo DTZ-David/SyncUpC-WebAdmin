@@ -17,7 +17,12 @@ export interface FacultyDTO {
 class FacultyService {
   async getAllFaculties(): Promise<Faculty[]> {
     try {
-      const response = await apiClient.get<any>(ENDPOINTS.FACULTY.GET_ALL);
+      // GET sin autenticación ya que es un endpoint público
+      const response = await apiClient.get<any>(
+        ENDPOINTS.FACULTY.GET_ALL,
+        undefined, // headers
+        false // requireAuth = false
+      );
 
       // Debug: vamos a ver qué estructura tiene la respuesta
       console.log("Raw API response:", response);

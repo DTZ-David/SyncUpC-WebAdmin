@@ -2,7 +2,8 @@
 
 import React from "react";
 import { positionOptions } from "../../constants/positionOptions";
-import InputField from "./shared/InputField";
+import { departmentOptions } from "../../constants/departmentOptions";
+import { professionOptions } from "../../constants/professionOptions";
 import SelectField from "./shared/SelectField";
 import { StaffFormData, Faculty } from "./types";
 
@@ -33,53 +34,56 @@ const ProfessionalDataStep: React.FC<ProfessionalDataStepProps> = ({
       </p>
     </div>
 
-    <InputField
-      label="Profesión"
-      name="profession"
-      value={formData.profession}
+    <SelectField
+      label="Facultad"
+      name="facultyId"
+      value={formData.facultyId}
       onChange={onInputChange}
-      placeholder="Ej: Ingeniero de Sistemas"
+      options={faculties.map((f) => ({ value: f.id, label: f.name }))}
+      placeholder={
+        loadingFaculties
+          ? "Cargando facultades..."
+          : "Selecciona una facultad"
+      }
       required
-      error={errors.profession}
-    />
-
-    <InputField
-      label="Departamento"
-      name="department"
-      value={formData.department}
-      onChange={onInputChange}
-      placeholder="Ej: Departamento de Sistemas"
-      required
-      error={errors.department}
+      error={errors.facultyId}
+      disabled={loadingFaculties}
     />
 
     <div className="grid md:grid-cols-2 gap-4">
       <SelectField
-        label="Cargo"
-        name="position"
-        value={formData.position}
+        label="Departamento"
+        name="department"
+        value={formData.department}
         onChange={onInputChange}
-        options={positionOptions}
+        options={departmentOptions}
+        placeholder="Selecciona un departamento"
         required
-        error={errors.position}
+        error={errors.department}
       />
 
       <SelectField
-        label="Facultad"
-        name="facultyId"
-        value={formData.facultyId}
+        label="Profesión"
+        name="profession"
+        value={formData.profession}
         onChange={onInputChange}
-        options={faculties.map((f) => ({ value: f.id, label: f.name }))}
-        placeholder={
-          loadingFaculties
-            ? "Cargando facultades..."
-            : "Selecciona una facultad"
-        }
+        options={professionOptions}
+        placeholder="Selecciona tu profesión"
         required
-        error={errors.facultyId}
-        disabled={loadingFaculties}
+        error={errors.profession}
       />
     </div>
+
+    <SelectField
+      label="Cargo"
+      name="position"
+      value={formData.position}
+      onChange={onInputChange}
+      options={positionOptions}
+      placeholder="Selecciona tu cargo"
+      required
+      error={errors.position}
+    />
   </div>
 );
 
