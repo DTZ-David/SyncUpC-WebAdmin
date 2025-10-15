@@ -77,28 +77,7 @@ export default function Dashboard({ onViewEventDetails }: DashboardProps) {
       icon: Calendar,
 
       color: "bg-green-500",
-    },
-    {
-      title: "Total de Asistentes",
-      value: stats.totalAttendees,
-      icon: Users,
-
-      color: "bg-blue-500",
-    },
-    {
-      title: "Asistentes Confirmados",
-      value: stats.confirmedAttendees,
-      icon: UserCheck,
-
-      color: "bg-lime-500",
-    },
-    {
-      title: "Tasa de Asistencia",
-      value: stats.attendanceRate,
-      icon: TrendingUp,
-
-      color: "bg-purple-500",
-    },
+    }
   ];
 
   // En tu Dashboard.tsx, cambia la parte donde preparas los recentEvents:
