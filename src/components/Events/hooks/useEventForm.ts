@@ -161,6 +161,55 @@ export const useEventForm = (event?: any, isOpen?: boolean) => {
     setIsSubmitting(false);
   }, [event, isOpen]);
 
+  // Mapear nombres a IDs una vez que se cargue la metadata
+  useEffect(() => {
+    if (isEditMode && formData && campuses.length > 0 && spaces.length > 0 && eventCategories.length > 0 && eventTypes.length > 0) {
+      console.log("🔄 Buscando IDs por nombre...");
+
+      // Buscar campusId por nombre
+      if (formData.campusName && !formData.campusId) {
+        const campus = campuses.find(c => c.name === formData.campusName);
+        if (campus) {
+          console.log("✅ Campus encontrado:", campus.name, "->", campus.id);
+          setFormData(prev => ({ ...prev, campusId: campus.id }));
+        }
+      }
+
+      // Buscar spaceId por nombre
+      if (formData.spaceName && !formData.spaceId) {
+        const space = spaces.find(s => s.name === formData.spaceName);
+        if (space) {
+          console.log("✅ Space encontrado:", space.name, "->", space.id);
+          setFormData(prev => ({ ...prev, spaceId: space.id }));
+        }
+      }
+
+      // Buscar categoryIds por nombres
+      if (formData.categoryNames && formData.categoryNames.length > 0 && formData.eventCategoryIds.length === 0) {
+        const categoryIds = formData.categoryNames
+          .map((name: string) => eventCategories.find(c => c.name === name)?.id)
+          .filter((id: string | undefined) => id !== undefined);
+
+        if (categoryIds.length > 0) {
+          console.log("✅ Categorías encontradas:", formData.categoryNames, "->", categoryIds);
+          setFormData(prev => ({ ...prev, eventCategoryIds: categoryIds }));
+        }
+      }
+
+      // Buscar typeIds por nombres
+      if (formData.eventTypeNames && formData.eventTypeNames.length > 0 && formData.eventTypeIds.length === 0) {
+        const typeIds = formData.eventTypeNames
+          .map((name: string) => eventTypes.find(t => t.name === name)?.id)
+          .filter((id: string | undefined) => id !== undefined);
+
+        if (typeIds.length > 0) {
+          console.log("✅ Tipos encontrados:", formData.eventTypeNames, "->", typeIds);
+          setFormData(prev => ({ ...prev, eventTypeIds: typeIds }));
+        }
+      }
+    }
+  }, [isEditMode, formData.campusName, formData.spaceName, formData.categoryNames, formData.eventTypeNames, campuses, spaces, eventCategories, eventTypes]);
+
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement

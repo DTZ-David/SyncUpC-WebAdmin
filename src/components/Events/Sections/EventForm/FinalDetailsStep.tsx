@@ -36,56 +36,81 @@ export function FinalDetailsStep({
   currentImage,
   isEditMode,
 }: FinalDetailsStepProps) {
+  const hasCategory = formData.eventCategoryIds && formData.eventCategoryIds.length > 0;
+  const hasType = formData.eventTypeIds && formData.eventTypeIds.length > 0;
+
   return (
     <div className="space-y-8" onKeyDown={(e) => e.stopPropagation()}>
       <h3 className="text-lg font-medium text-gray-900">
         Detalles Finales del Evento
       </h3>
 
+      {(!hasCategory || !hasType) && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p className="text-xs text-blue-700">
+            Debes seleccionar al menos una categoría y un tipo de evento
+          </p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Categorías y Tipos */}
         <div className="space-y-6">
           {/* Categorías del Evento */}
-          <CustomSelect
-            label="Categorías del Evento"
-            options={eventCategories.map((category) => ({
-              id: category.id,
-              name: category.name,
-              description: category.description,
-            }))}
-            value={formData.eventCategoryIds || []}
-            onChange={(value) => onCategoryChange(value as string[])}
-            multiple={true}
-            required={true}
-            placeholder={
-              isLoadingMetadata
-                ? "Cargando categorías..."
-                : "Seleccionar categorías"
-            }
-            disabled={isLoadingMetadata}
-            loading={isLoadingMetadata}
-            icon={<Tag size={18} />}
-          />
+          <div>
+            <CustomSelect
+              label="Categorías del Evento *"
+              options={eventCategories.map((category) => ({
+                id: category.id,
+                name: category.name,
+                description: category.description,
+              }))}
+              value={formData.eventCategoryIds || []}
+              onChange={(value) => onCategoryChange(value as string[])}
+              multiple={true}
+              required={true}
+              placeholder={
+                isLoadingMetadata
+                  ? "Cargando categorías..."
+                  : "Seleccionar categorías"
+              }
+              disabled={isLoadingMetadata}
+              loading={isLoadingMetadata}
+              icon={<Tag size={18} />}
+            />
+            {!hasCategory && (
+              <p className="text-xs text-red-500 mt-1">
+                Debes seleccionar al menos una categoría
+              </p>
+            )}
+          </div>
 
           {/* Tipos de Evento */}
-          <CustomSelect
-            label="Tipos de Evento"
-            options={eventTypes.map((type) => ({
-              id: type.id,
-              name: type.name,
-              description: type.description,
-            }))}
-            value={formData.eventTypeIds || []}
-            onChange={(value) => onTypeChange(value as string[])}
-            multiple={true}
-            required={true}
-            placeholder={
-              isLoadingMetadata ? "Cargando tipos..." : "Seleccionar tipos"
-            }
-            disabled={isLoadingMetadata}
-            loading={isLoadingMetadata}
-            icon={<Type size={18} />}
-          />
+          <div>
+            <CustomSelect
+              label="Tipos de Evento *"
+              options={eventTypes.map((type) => ({
+                id: type.id,
+                name: type.name,
+                description: type.description,
+              }))}
+              value={formData.eventTypeIds || []}
+              onChange={(value) => onTypeChange(value as string[])}
+              multiple={true}
+              required={true}
+              placeholder={
+                isLoadingMetadata ? "Cargando tipos..." : "Seleccionar tipos"
+              }
+              disabled={isLoadingMetadata}
+              loading={isLoadingMetadata}
+              icon={<Type size={18} />}
+            />
+            {!hasType && (
+              <p className="text-xs text-red-500 mt-1">
+                Debes seleccionar al menos un tipo
+              </p>
+            )}
+          </div>
 
           {/* Preview de selecciones */}
           {(formData.eventCategoryIds?.length > 0 ||
@@ -134,11 +159,7 @@ export function FinalDetailsStep({
 
         {/* Imagen del Evento */}
         <div onClick={(e) => e.stopPropagation()}>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Imagen del Evento
-            </label>
-          </div>
+         
           <ImageUpload
             onImageUpload={onImageUpload}
             currentImage={currentImage}

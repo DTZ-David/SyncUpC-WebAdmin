@@ -87,14 +87,20 @@ export const CareerSelectionSection: React.FC<CareerSelectionSectionProps> = ({
     );
   }
 
+  const hasCareer = formData.careerIds && formData.careerIds.length > 0;
+
   return (
     <div className="space-y-3">
-      <h3 className="text-lg font-medium text-gray-900">Carreras Dirigidas</h3>
+      <h3 className="text-lg font-medium text-gray-900">
+        Carreras Dirigidas *
+      </h3>
       <p className="text-sm text-gray-600">
-        Selecciona las carreras a las que va dirigido el evento (opcional)
+        Selecciona al menos una carrera a la que va dirigido el evento
       </p>
 
-      <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+      <div className={`max-h-48 overflow-y-auto border rounded-lg p-3 ${
+        !hasCareer ? "border-red-300 bg-red-50" : "border-gray-200"
+      }`}>
         {careers.length === 0 ? (
           <p className="text-gray-500 text-sm">No hay carreras disponibles</p>
         ) : (
@@ -102,7 +108,7 @@ export const CareerSelectionSection: React.FC<CareerSelectionSectionProps> = ({
             {careers.map((career) => (
               <label
                 key={career.id}
-                className="flex items-start space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                className="flex items-start space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded"
               >
                 <input
                   type="checkbox"
@@ -120,9 +126,13 @@ export const CareerSelectionSection: React.FC<CareerSelectionSectionProps> = ({
         )}
       </div>
 
-      {formData.careerIds && formData.careerIds.length > 0 && (
-        <p className="text-sm text-gray-600">
-          {formData.careerIds.length} carrera(s) seleccionada(s)
+      {hasCareer ? (
+        <p className="text-sm text-green-600">
+          ✓ {formData.careerIds.length} carrera(s) seleccionada(s)
+        </p>
+      ) : (
+        <p className="text-xs text-red-500">
+          Debes seleccionar al menos una carrera
         </p>
       )}
     </div>

@@ -22,14 +22,6 @@ export const LocationInfoSection: React.FC<UpdatedLocationInfoProps> = ({
   onCampusChange,
   onSpaceChange,
 }) => {
-  // 🔍 DEBUG: Agregar estos logs temporalmente
-  console.log("🏫 LocationInfoSection - Props recibidos:");
-  console.log("campuses:", campuses);
-  console.log("availableSpaces:", availableSpaces);
-  console.log("isLoadingMetadata:", isLoadingMetadata);
-  console.log("formData.campusId:", formData.campusId);
-
-  // 🔍 DEBUG: Ver qué se está pasando al CustomSelect
   const campusOptions = (campuses || []).map((campus) => ({
     id: campus.id,
     name: campus.name,
@@ -42,50 +34,76 @@ export const LocationInfoSection: React.FC<UpdatedLocationInfoProps> = ({
     description: space.description,
   }));
 
-  console.log("🎯 Opciones mapeadas para Campus:", campusOptions);
-  console.log("🎯 Opciones mapeadas para Spaces:", spaceOptions);
+  const hasCampus = formData.campusId && formData.campusId !== "";
+  const hasSpace = formData.spaceId && formData.spaceId !== "";
+  const isVirtual = formData.isVirtual;
+
+  // Solo mostrar errores si el evento NO es virtual
+  const showCampusError = !isVirtual && !hasCampus;
+  const showSpaceError = !isVirtual && hasCampus && !hasSpace;
 
   return (
     <div className="space-y-6">
-      {/* ... resto del componente igual ... */}
+      {!isVirtual && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <p className="text-xs text-blue-700">
+            Para eventos presenciales, debes seleccionar un campus y un espacio
+          </p>
+        </div>
+      )}
 
-      {/* Campus Selection - usar la variable mapeada */}
-      <CustomSelect
-        label="Campus"
-        options={campusOptions} // usar la variable en lugar del mapeo inline
-        value={formData.campusId}
-        onChange={(value) => onCampusChange(value as string)}
-        required={true}
-        placeholder={
-          isLoadingMetadata ? "Cargando campus..." : "Seleccionar campus"
-        }
-        disabled={isLoadingMetadata}
-        loading={isLoadingMetadata}
-        icon={<Building size={18} />}
-      />
+      {/* Campus Selection */}
+      <div>
+        <CustomSelect
+          label="Campus"
+          options={campusOptions}
+          value={formData.campusId}
+          onChange={(value) => onCampusChange(value as string)}
+          required={!isVirtual}
+          placeholder={
+            isLoadingMetadata ? "Cargando campus..." : "Seleccionar campus"
+          }
+          disabled={isLoadingMetadata || isVirtual}
+          loading={isLoadingMetadata}
+          icon={<Building size={18} />}
+        />
+        {showCampusError && (
+          <p className="text-xs text-red-500 mt-1">
+            Debes seleccionar un campus para eventos presenciales
+          </p>
+        )}
+      </div>
 
-      {/* Space Selection - usar la variable mapeada */}
-      <CustomSelect
-        label="Espacio / Salón"
-        options={spaceOptions} // usar la variable en lugar del mapeo inline
-        value={formData.spaceId}
-        onChange={(value) => onSpaceChange(value as string)}
-        required={true}
-        placeholder={
-          !formData.campusId
-            ? "Primero selecciona un campus"
-            : availableSpaces.length === 0
-            ? "No hay espacios disponibles"
-            : "Seleccionar espacio"
-        }
-        disabled={
-          !formData.campusId ||
-          availableSpaces.length === 0 ||
-          isLoadingMetadata
-        }
-        loading={isLoadingMetadata}
-        icon={<MapPin size={18} />}
-      />
+      {/* Space Selection */}
+      <div>
+        <CustomSelect
+          label="Espacio / Salón"
+          options={spaceOptions}
+          value={formData.spaceId}
+          onChange={(value) => onSpaceChange(value as string)}
+          required={!isVirtual}
+          placeholder={
+            !formData.campusId
+              ? "Primero selecciona un campus"
+              : availableSpaces.length === 0
+              ? "No hay espacios disponibles"
+              : "Seleccionar espacio"
+          }
+          disabled={
+            !formData.campusId ||
+            availableSpaces.length === 0 ||
+            isLoadingMetadata ||
+            isVirtual
+          }
+          loading={isLoadingMetadata}
+          icon={<MapPin size={18} />}
+        />
+        {showSpaceError && (
+          <p className="text-xs text-red-500 mt-1">
+            Debes seleccionar un espacio para eventos presenciales
+          </p>
+        )}
+      </div>
     </div>
   );
 };

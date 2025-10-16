@@ -26,57 +26,132 @@ const validateBasicInfo = (formData: any): boolean => {
 };
 
 const validateDateTimeLocation = (formData: any): boolean => {
-  const hasStartDate = formData.startDate !== "";
-  const hasStartTime = formData.startTime !== "";
+  const hasStartDate = formData.startDate !== "" && formData.startDate !== undefined;
+  const hasStartTime = formData.startTime !== "" && formData.startTime !== undefined;
+
+  // Validar que la fecha y hora no estén en el pasado
+  let dateTimeValid = true;
+  let eventDateTime: Date | null = null;
+  if (hasStartDate && hasStartTime) {
+    const now = new Date();
+    eventDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
+    dateTimeValid = eventDateTime > now;
+  }
+
+  // Validar que la fecha de fin sea después de la fecha de inicio (si se proporcionan ambas)
+  let endDateValid = true;
+  const hasEndDate = formData.endDate && formData.endDate !== "";
+  const hasEndTime = formData.endTime && formData.endTime !== "";
+  if (hasStartDate && hasStartTime && hasEndDate && hasEndTime) {
+    const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`);
+    endDateValid = endDateTime > eventDateTime!;
+  }
 
   // Validar ubicación
   let locationValid = true;
   if (!formData.isVirtual) {
-    locationValid = formData.campusId !== "" && formData.spaceId !== "";
+    locationValid = formData.campusId !== "" && formData.campusId !== undefined &&
+                    formData.spaceId !== "" && formData.spaceId !== undefined;
   } else {
-    locationValid = formData.meetingUrl?.trim() !== "";
+    locationValid = formData.meetingUrl?.trim() !== "" && formData.meetingUrl !== undefined;
   }
 
   // Validar fechas de registro si requiere registro
+  // NOTA: Por ahora no validamos fechas de registro porque no hay campos en la UI
+  // TODO: Agregar campos de registro en DateTimeInfoSection si se necesitan
   let registrationValid = true;
-  if (formData.requiresRegistration) {
-    registrationValid =
-      formData.registrationStart !== "" &&
-      formData.registrationStartTime !== "" &&
-      formData.registrationEnd !== "" &&
-      formData.registrationEndTime !== "";
-  }
+  // if (formData.requiresRegistration) {
+  //   registrationValid =
+  //     formData.registrationStart !== "" && formData.registrationStart !== undefined &&
+  //     formData.registrationStartTime !== "" && formData.registrationStartTime !== undefined &&
+  //     formData.registrationEnd !== "" && formData.registrationEnd !== undefined &&
+  //     formData.registrationEndTime !== "" && formData.registrationEndTime !== undefined;
+  // }
 
   // Validar capacidad si se proporciona
   let capacityValid = true;
-  if (formData.maxCapacity && formData.maxCapacity.toString().trim() !== "") {
+  if (formData.maxCapacity !== undefined && formData.maxCapacity !== null && formData.maxCapacity.toString().trim() !== "") {
     const capacity = parseInt(formData.maxCapacity);
-    capacityValid = !isNaN(capacity) && capacity > 0 && capacity <= 10000;
+    // Permitir 0 o mayor (0 = sin límite)
+    capacityValid = !isNaN(capacity) && capacity >= 0 && capacity <= 10000;
   }
 
-  console.log("🔍 Validation Debug:", {
-    hasStartDate,
-    hasStartTime,
-    locationValid,
-    registrationValid,
-    capacityValid,
-    maxCapacity: formData.maxCapacity,
-    isVirtual: formData.isVirtual,
-    campusId: formData.campusId,
-    spaceId: formData.spaceId,
-    requiresRegistration: formData.requiresRegistration,
+  const isValid = hasStartDate && hasStartTime && dateTimeValid && endDateValid && locationValid && registrationValid && capacityValid;
+
+  console.log("🔍 Validation Debug - Fecha y Ubicación:", {
+    "✅ hasStartDate": hasStartDate,
+    "✅ hasStartTime": hasStartTime,
+    "⏰ dateTimeValid": dateTimeValid,
+    "📅 endDateValid": endDateValid,
+    "📍 locationValid": locationValid,
+    "📝 registrationValid": registrationValid,
+    "👥 capacityValid": capacityValid,
+    "---": "--- Valores actuales ---",
+    "startDate": formData.startDate,
+    "startTime": formData.startTime,
+    "endDate": formData.endDate,
+    "endTime": formData.endTime,
+    "eventDateTime": eventDateTime?.toLocaleString(),
+    "now": new Date().toLocaleString(),
+    "maxCapacity": formData.maxCapacity,
+    "isVirtual": formData.isVirtual,
+    "campusId": formData.campusId,
+    "spaceId": formData.spaceId,
+    "requiresRegistration": formData.requiresRegistration,
+    "meetingUrl": formData.meetingUrl,
+    "🎯 FINAL_RESULT": isValid,
   });
 
-  return hasStartDate && hasStartTime && locationValid && registrationValid && capacityValid;
+  return isValid;
 };
 
 const validateAudience = (formData: any): boolean => {
-  return (
+  // Validar que al menos una audiencia esté seleccionada
+  const hasAudience =
     formData.targetTeachers ||
     formData.targetStudents ||
     formData.targetAdministrative ||
-    formData.targetGeneral
-  );
+    formData.targetGeneral;
+
+  // Validar que al menos una carrera esté seleccionada
+  const hasCareer = formData.careerIds && formData.careerIds.length > 0;
+
+  const isValid = hasAudience && hasCareer;
+
+  console.log("🔍 Validation Debug - Audiencia:", {
+    "✅ hasAudience": hasAudience,
+    "🎓 hasCareer": hasCareer,
+    "---": "--- Valores actuales ---",
+    "targetTeachers": formData.targetTeachers,
+    "targetStudents": formData.targetStudents,
+    "targetAdministrative": formData.targetAdministrative,
+    "targetGeneral": formData.targetGeneral,
+    "careerIds": formData.careerIds,
+    "🎯 FINAL_RESULT": isValid,
+  });
+
+  return isValid;
+};
+
+const validateFinalDetails = (formData: any): boolean => {
+  // Validar que al menos una categoría esté seleccionada
+  const hasCategory = formData.eventCategoryIds && formData.eventCategoryIds.length > 0;
+
+  // Validar que al menos un tipo esté seleccionado
+  const hasType = formData.eventTypeIds && formData.eventTypeIds.length > 0;
+
+  const isValid = hasCategory && hasType;
+
+  console.log("🔍 Validation Debug - Detalles Finales:", {
+    "🏷️ hasCategory": hasCategory,
+    "📋 hasType": hasType,
+    "---": "--- Valores actuales ---",
+    "eventCategoryIds": formData.eventCategoryIds,
+    "eventTypeIds": formData.eventTypeIds,
+    "🎯 FINAL_RESULT": isValid,
+  });
+
+  return isValid;
 };
 
 export const FORM_STEPS: Step[] = [
@@ -110,6 +185,6 @@ export const FORM_STEPS: Step[] = [
     icon: "✨",
     description: "Información adicional, etiquetas e imagen",
     component: FinalDetailsStep,
-    validation: () => true,
+    validation: validateFinalDetails,
   },
 ];
