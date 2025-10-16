@@ -12,10 +12,37 @@ export class EventMapper {
   static backendEventToFormData(event: EventModel): any {
     console.log("🔄 Mapeando evento del backend al formulario:", event);
 
-    // Función helper para parsear fecha del backend: "16/10/2025 15:30:00" -> {date, time}
+    // Función helper para parsear fecha del backend
+    // Soporta dos formatos:
+    // 1. "16/10/2025 15:30:00" (formato legacy)
+    // 2. "2025-10-16T15:30:00.000Z" (formato ISO de la app Flutter)
     const parseBackendDate = (dateString: string): { date: string; time: string } => {
       try {
-        // Formato backend: "DD/MM/YYYY HH:MM:SS"
+        // Si es formato ISO (contiene 'T' o 'Z')
+        if (dateString.includes('T') || dateString.includes('Z')) {
+          const date = new Date(dateString);
+
+          if (isNaN(date.getTime())) {
+            console.error("❌ Fecha ISO inválida:", dateString);
+            return { date: "", time: "" };
+          }
+
+          // Extraer fecha en formato YYYY-MM-DD
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+
+          // Extraer hora en formato HH:MM
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+
+          return {
+            date: `${year}-${month}-${day}`, // YYYY-MM-DD
+            time: `${hours}:${minutes}`       // HH:MM
+          };
+        }
+
+        // Formato legacy: "DD/MM/YYYY HH:MM:SS"
         const [datePart, timePart] = dateString.split(' ');
         const [day, month, year] = datePart.split('/');
         const [hours, minutes] = timePart.split(':');
@@ -131,23 +158,25 @@ export class EventMapper {
       throw new Error("Se requiere el ID del evento para actualizar");
     }
 
-    // Combinar fecha y hora para startDate
-    let startDateISO = new Date().toISOString();
-    if (formData.startDate && formData.startTime) {
-      const combinedStart = `${formData.startDate}T${formData.startTime}:00`;
-      startDateISO = new Date(combinedStart).toISOString();
-    } else if (formData.startDate) {
-      startDateISO = new Date(formData.startDate).toISOString();
-    }
+    // Función helper para combinar fecha y hora (como en Flutter)
+    const combineDateAndTime = (dateStr: string, timeStr: string): string => {
+      // Extraer solo la parte de la fecha (por si viene con hora)
+      const dateOnly = dateStr.split('T')[0]; // "2025-10-16"
 
-    // Combinar fecha y hora para endDate
-    let endDateISO = new Date().toISOString();
-    if (formData.endDate && formData.endTime) {
-      const combinedEnd = `${formData.endDate}T${formData.endTime}:00`;
-      endDateISO = new Date(combinedEnd).toISOString();
-    } else if (formData.endDate) {
-      endDateISO = new Date(formData.endDate).toISOString();
-    }
+      // Combinar fecha + hora
+      const combined = `${dateOnly}T${timeStr}:00`;
+      const dateObj = new Date(combined);
+
+      if (isNaN(dateObj.getTime())) {
+        throw new Error(`Fecha inválida: ${combined}`);
+      }
+
+      return dateObj.toISOString();
+    };
+
+    // Combinar y convertir a ISO
+    const startDateISO = combineDateAndTime(formData.startDate, formData.startTime);
+    const endDateISO = combineDateAndTime(formData.endDate, formData.endTime);
 
     return {
       eventId,
@@ -182,23 +211,30 @@ export class EventMapper {
   }
 
   static formDataToCreateRequest(formData: any): CreateEventRequest {
-    // Combinar fecha y hora para startDate
-    let startDateISO = new Date().toISOString();
-    if (formData.startDate && formData.startTime) {
-      const combinedStart = `${formData.startDate}T${formData.startTime}:00`;
-      startDateISO = new Date(combinedStart).toISOString();
-    } else if (formData.startDate) {
-      startDateISO = new Date(formData.startDate).toISOString();
-    }
+    console.log("🔄 formDataToCreateRequest - formData recibido:", formData);
 
-    // Combinar fecha y hora para endDate
-    let endDateISO = new Date().toISOString();
-    if (formData.endDate && formData.endTime) {
-      const combinedEnd = `${formData.endDate}T${formData.endTime}:00`;
-      endDateISO = new Date(combinedEnd).toISOString();
-    } else if (formData.endDate) {
-      endDateISO = new Date(formData.endDate).toISOString();
-    }
+    // Función helper para combinar fecha y hora (como en Flutter)
+    const combineDateAndTime = (dateStr: string, timeStr: string): string => {
+      // Extraer solo la parte de la fecha (por si viene con hora)
+      const dateOnly = dateStr.split('T')[0]; // "2025-10-16"
+
+      // Combinar fecha + hora
+      const combined = `${dateOnly}T${timeStr}:00`;
+      const dateObj = new Date(combined);
+
+      if (isNaN(dateObj.getTime())) {
+        throw new Error(`Fecha inválida: ${combined}`);
+      }
+
+      return dateObj.toISOString();
+    };
+
+    // Combinar y convertir a ISO
+    const startDateISO = combineDateAndTime(formData.startDate, formData.startTime);
+    const endDateISO = combineDateAndTime(formData.endDate, formData.endTime);
+
+    console.log("✅ startDateISO:", startDateISO);
+    console.log("✅ endDateISO:", endDateISO);
 
     return {
       eventTitle: formData.eventTitle || "",

@@ -217,6 +217,11 @@ export const useEventForm = (event?: any, isOpen?: boolean) => {
   ) => {
     const { name, value, type } = e.target;
 
+    // Log para debug de fechas
+    if (name === "startDate" || name === "endDate" || name === "startTime" || name === "endTime") {
+      console.log(`📝 handleInputChange - ${name}:`, value, "tipo:", typeof value);
+    }
+
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData((prev) => ({ ...prev, [name]: checked }));

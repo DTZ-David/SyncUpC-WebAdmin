@@ -170,8 +170,8 @@ export default function EventForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-lg w-full max-w-5xl my-4 sm:my-8 flex flex-col max-h-[calc(100vh-2rem)] sm:max-h-[90vh]">
         <FormHeader
           isEditMode={isEditMode}
           onClose={onClose}
@@ -185,16 +185,16 @@ export default function EventForm({
         <form
           onSubmit={handleSubmit}
           onKeyDown={handleFormKeyDown}
-          className="flex-1 flex flex-col"
+          className="flex-1 flex flex-col min-h-0"
         >
           <div className="flex-1 overflow-y-auto">
-            <div className="px-8 py-6">
+            <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6">
               <ErrorDisplay
                 error={submitError}
                 onDismiss={() => setSubmitError("")}
               />
 
-              <div className="min-h-[400px]">{renderCurrentStep()}</div>
+              <div className="min-h-[300px] sm:min-h-[400px]">{renderCurrentStep()}</div>
             </div>
           </div>
 

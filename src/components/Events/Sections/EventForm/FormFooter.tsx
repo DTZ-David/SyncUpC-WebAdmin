@@ -24,12 +24,12 @@ export function FormFooter({
   onClose,
 }: FormFooterProps) {
   return (
-    <div className="px-8 py-6 bg-gray-50 border-t flex items-center justify-between">
+    <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 bg-gray-50 border-t flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 shrink-0">
       <button
         type="button"
         onClick={onPrevStep}
         disabled={isFirstStep || isSubmitting}
-        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+        className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
           isFirstStep || isSubmitting
             ? "text-gray-400 cursor-not-allowed"
             : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
@@ -39,12 +39,12 @@ export function FormFooter({
         <span>Anterior</span>
       </button>
 
-      <div className="flex space-x-3">
+      <div className="flex flex-col sm:flex-row gap-3 sm:space-x-3">
         <button
           type="button"
           onClick={onClose}
           disabled={isSubmitting}
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          className="px-4 sm:px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 text-sm sm:text-base"
         >
           Cancelar
         </button>
@@ -53,7 +53,7 @@ export function FormFooter({
           <button
             type="submit"
             disabled={isSubmitting || isUploadingImage}
-            className="px-6 py-2 bg-lime-500 text-white rounded-lg hover:bg-lime-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            className="px-4 sm:px-6 py-2 bg-lime-500 text-white rounded-lg hover:bg-lime-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm sm:text-base"
           >
             {isSubmitting || isUploadingImage ? (
               <>
@@ -78,7 +78,7 @@ export function FormFooter({
               onNextStep();
             }}
             disabled={!canProceedToNext || isSubmitting}
-            className={`flex items-center space-x-2 px-6 py-2 rounded-lg transition-colors ${
+            className={`flex items-center justify-center space-x-2 px-4 sm:px-6 py-2 rounded-lg transition-colors text-sm sm:text-base ${
               canProceedToNext && !isSubmitting
                 ? "bg-lime-500 text-white hover:bg-lime-600"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
