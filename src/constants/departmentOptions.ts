@@ -5,48 +5,39 @@ export interface DepartmentOption {
   label: string;
 }
 
-// Departamentos comunes en universidades
+// Departamentos administrativos y académicos de la universidad
 export const departmentOptions: DepartmentOption[] = [
-  // Ingeniería
-  { value: "sistemas", label: "Ingeniería de Sistemas" },
-  { value: "civil", label: "Ingeniería Civil" },
-  { value: "electronica", label: "Ingeniería Electrónica" },
-  { value: "industrial", label: "Ingeniería Industrial" },
-  { value: "mecanica", label: "Ingeniería Mecánica" },
-  { value: "ambiental", label: "Ingeniería Ambiental" },
+  // Coordinaciones Académicas
+  { value: "coord_academica", label: "Coordinación Académica" },
+  { value: "coord_investigacion", label: "Coordinación de Investigación" },
+  { value: "coord_posgrados", label: "Coordinación de Posgrados" },
+  { value: "coord_bienestar", label: "Coordinación de Bienestar Universitario" },
 
-  // Ciencias de la Salud
-  { value: "medicina", label: "Medicina" },
-  { value: "enfermeria", label: "Enfermería" },
-  { value: "odontologia", label: "Odontología" },
-  { value: "fisioterapia", label: "Fisioterapia" },
+  // Departamentos Académicos
+  { value: "depto_sistemas", label: "Departamento de Sistemas" },
+  { value: "depto_ingenieria", label: "Departamento de Ingeniería" },
+  { value: "depto_ciencias_salud", label: "Departamento de Ciencias de la Salud" },
+  { value: "depto_ciencias_sociales", label: "Departamento de Ciencias Sociales" },
+  { value: "depto_ciencias_basicas", label: "Departamento de Ciencias Básicas" },
+  { value: "depto_humanidades", label: "Departamento de Humanidades" },
+  { value: "depto_ciencias_economicas", label: "Departamento de Ciencias Económicas" },
 
-  // Ciencias Sociales y Humanidades
-  { value: "derecho", label: "Derecho" },
-  { value: "psicologia", label: "Psicología" },
-  { value: "trabajo_social", label: "Trabajo Social" },
-  { value: "comunicacion_social", label: "Comunicación Social" },
+  // Departamentos Administrativos
+  { value: "depto_recursos_humanos", label: "Departamento de Recursos Humanos" },
+  { value: "depto_financiero", label: "Departamento Financiero" },
+  { value: "depto_contabilidad", label: "Departamento de Contabilidad" },
+  { value: "depto_servicios_generales", label: "Departamento de Servicios Generales" },
 
-  // Educación
-  { value: "educacion_basica", label: "Educación Básica" },
-  { value: "educacion_fisica", label: "Educación Física" },
-  { value: "pedagogia", label: "Pedagogía" },
-
-  // Ciencias Económicas y Administrativas
-  { value: "administracion_empresas", label: "Administración de Empresas" },
-  { value: "contaduria", label: "Contaduría Pública" },
-  { value: "economia", label: "Economía" },
-  { value: "mercadeo", label: "Mercadeo" },
-
-  // Ciencias Básicas
-  { value: "matematicas", label: "Matemáticas" },
-  { value: "fisica", label: "Física" },
-  { value: "quimica", label: "Química" },
-  { value: "biologia", label: "Biología" },
+  // Áreas de Soporte
+  { value: "registro_academico", label: "Registro Académico" },
+  { value: "biblioteca", label: "Biblioteca" },
+  { value: "admisiones", label: "Admisiones y Registro" },
+  { value: "tecnologia", label: "Tecnología y Sistemas de Información" },
+  { value: "comunicaciones", label: "Comunicaciones y Marketing" },
+  { value: "planeacion", label: "Planeación Institucional" },
+  { value: "calidad", label: "Aseguramiento de la Calidad" },
+  { value: "juridica", label: "Oficina Jurídica" },
 
   // Otros
-  { value: "arquitectura", label: "Arquitectura" },
-  { value: "agronomia", label: "Agronomía" },
-  { value: "veterinaria", label: "Medicina Veterinaria" },
   { value: "otro", label: "Otro" },
 ];

@@ -23,11 +23,11 @@ export const ENDPOINTS = {
     CREATE: "/event/create",
     UPDATE: "/event/update",
     DELETE: "/event/delete",
-    // Nuevos endpoints para la creación de eventos
-    GET_CATEGORIES: "/event/getalleventcategories",
-    GET_TYPES: "/event/getalleventtypes",
-    GET_CAMPUS: "/event/getallcampus",
-    GET_SPACES: "/event/getallspaces",
+    // Endpoints de metadata están en eventutils
+    GET_CATEGORIES: "/eventutils/getalleventcategories",
+    GET_TYPES: "/eventutils/getalleventtypes",
+    GET_CAMPUS: "/eventutils/getallcampus",
+    GET_SPACES: "/eventutils/getallspaces",
   },
   CAREER: {
     GET_ALL: "/career/getallcareers",

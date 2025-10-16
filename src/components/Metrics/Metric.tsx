@@ -7,8 +7,6 @@ import {
   BookOpen,
   GraduationCap,
   Clock,
-  Download,
-  FileSpreadsheet,
   RefreshCw,
   Award,
   Target,
@@ -599,16 +597,6 @@ export default function EventMetricsDashboard() {
           >
             <Filter size={16} />
             <span>Filtros</span>
-          </button>
-
-          <button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center space-x-2 text-sm">
-            <Download size={16} />
-            <span>PDF</span>
-          </button>
-
-          <button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2 text-sm">
-            <FileSpreadsheet size={16} />
-            <span>Excel</span>
           </button>
         </div>
       </div>

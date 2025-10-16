@@ -22,15 +22,6 @@ export default function EventDetails({
   onEdit,
   onDelete,
 }: EventDetailsProps) {
-  // Debug logs
-  console.log("🎯 [EventDetails] Event prop recibido:");
-  console.log("- event.address:", event.address);
-  console.log("- event.eventLocation:", event.eventLocation);
-  console.log("- event.additionalDetails:", event.additionalDetails);
-  console.log("- Tipo de event.address:", typeof event.address);
-  console.log("- Longitud de event.address:", event.address?.length);
-  console.log("- Todo el objeto event:", JSON.stringify(event, null, 2));
-
   const handleDelete = () => {
     if (window.confirm("¿Estás seguro de que quieres eliminar este evento?")) {
       console.log("🎯 [EVENT DETAILS] Llamando onDelete con ID:", event.id);
@@ -41,6 +32,13 @@ export default function EventDetails({
   const handleEdit = () => {
     onEdit(event);
   };
+
+  // Combinar tags de categories y eventTypes
+  const eventTags = [
+    ...(event.categories?.map((cat: any) => cat.name) || []),
+    ...(event.eventTypes?.map((type: any) => type.name) || []),
+    ...(event.tags || []),
+  ].filter((tag: string) => tag); // Filtrar valores vacíos
 
   return (
     <div className="space-y-6">
@@ -98,7 +96,7 @@ export default function EventDetails({
             isSaved={event.isSaved}
           />
 
-          <EventTags tags={event.tags} />
+          <EventTags tags={eventTags} />
         </div>
       </div>
     </div>

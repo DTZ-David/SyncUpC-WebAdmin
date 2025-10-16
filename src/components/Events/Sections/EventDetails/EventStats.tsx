@@ -26,12 +26,12 @@ export function EventStats({
           <span className="text-gray-600">Confirmados</span>
           <span className="font-semibold text-green-600">{confirmed}</span>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-gray-600">Capacidad Máxima</span>
-          <span className="font-semibold text-gray-900">
-            {maxCapacity || "Sin límite"}
-          </span>
-        </div>
+        {maxCapacity !== undefined && maxCapacity !== null && maxCapacity > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-gray-600">Capacidad Máxima</span>
+            <span className="font-semibold text-gray-900">{maxCapacity}</span>
+          </div>
+        )}
       </div>
     </div>
   );

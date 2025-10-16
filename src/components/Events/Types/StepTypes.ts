@@ -49,10 +49,23 @@ const validateDateTimeLocation = (formData: any): boolean => {
 
   // Validar capacidad si se proporciona
   let capacityValid = true;
-  if (formData.maxCapacity?.trim()) {
+  if (formData.maxCapacity && formData.maxCapacity.toString().trim() !== "") {
     const capacity = parseInt(formData.maxCapacity);
     capacityValid = !isNaN(capacity) && capacity > 0 && capacity <= 10000;
   }
+
+  console.log("🔍 Validation Debug:", {
+    hasStartDate,
+    hasStartTime,
+    locationValid,
+    registrationValid,
+    capacityValid,
+    maxCapacity: formData.maxCapacity,
+    isVirtual: formData.isVirtual,
+    campusId: formData.campusId,
+    spaceId: formData.spaceId,
+    requiresRegistration: formData.requiresRegistration,
+  });
 
   return hasStartDate && hasStartTime && locationValid && registrationValid && capacityValid;
 };
